@@ -1,0 +1,5 @@
+stanford-parser-full/
+*.jar
+stanford-ner
+.DS_Store
+.idea/
