@@ -2,25 +2,29 @@ import nltk
 from nltk.tree import Tree
 from nltk import word_tokenize
 from nltk.corpus import stopwords
+from nltk.corpus import wordnet
 import string
 import os
 import re
 import sys
 import math
+from textblob import TextBlob
 
 # nltk.download('punkt')
 # nltk.download('stopwords')
 
 class Answer(object):
-    def __init__(self, sentences, question):
+    def __init__(self, sentences, question, questionType):
         self.sentences = sentences
         self.question = question
+        self.questionType = questionType
         self.length = 0
         for s in self.sentences:
             for word in self.question:
                 self.length += s.count(word)
 
         self.sentences = self.preprocessSentence(self.sentences)
+        self.questionSynset = self.preprocessQuestion()
         self.questionDict = self.compQues(self.question)
         self.sentDict = self.calculToken(self.sentences, self.questionDict)
         self.vectorList = self.similarity(self.question)
@@ -28,7 +32,14 @@ class Answer(object):
     def preprocessSentence(self, sentList):
         for words in sentList:
             words = [w for w in words if w not in stopwords.words()]
+            words = [w.lemmatize() for w in words]
         return sentList
+
+    def preprocessQuestion(self):
+        questionSynset = []
+        for word in self.question:
+            questionSynset.append(wordnet.synsets(word))
+        return questionSynset
 
     # take in a sentence of words
     def calculToken(self, sentList, questionDict):
@@ -74,10 +85,17 @@ class Answer(object):
 
     def getSentence(self):
         for vector in self.vectorList:
-            pass
+            pass 
+        # get the highest ranked sentences
 
-#with open ("data/set1/a2.txt", "r") as doc:
-#text = doc.read()
+    def answerYesNo(self):
+        pass
+
+    def answerWh(self):
+        pass
+
+
+''' test script
 text = "Early life and education\nDonovan was born on March 4, 1982, in Ontario, California, to Donna Kenney-Cash, a special education teacher, and Tim Donovan, a semi-professional ice hockey player originally from Canada, which makes Donovan a Canadian citizen by descent. His mother raised him and his siblings in Redlands, California.\nWhen Donovan was six, his mother allowed him to join an organized league, and he scored seven goals in his first game. Donovan was a member of Cal Heat – a club based in nearby Rancho Cucamonga under coach Clint Greenwood. In 1997, he was accepted into U.S. Youth Soccer's Olympic Development Program. He attended Redlands East Valley High School when not engaged in soccer activities elsewhere. In 1999, Donovan attended the IMG Academy in Bradenton, Florida, part of U.S. Soccer's training program."
 sent_text = nltk.sent_tokenize(text)
 token = []
@@ -86,5 +104,16 @@ for sentence in sent_text:
     token.append(tokenized_text)
 question = "Who was born in California".split()
 A = Answer(token, question)
+'''
 
-        # tagged = nltk.pos_tag(tokenized_text) 
+def main(loc):
+    with open ("data/set1/a2.txt", "r") as doc:
+        text = doc.read()
+        sent_text = nltk.sent_tokenize(text)
+        sent_text = [s.encode('ascii',errors='ignore') for s in sent_text]
+        token = []
+        for sentence in sent_text:
+            tokenized_text = nltk.word_tokenize(sentence)
+            token.append(tokenized_text)
+        question = "Who was born in California".split()
+        A = Answer(token, question, "WHO")
