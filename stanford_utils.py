@@ -16,7 +16,7 @@ def new_parser():
 
 def new_NERtagger():
     os.environ['JAVAHOME'] =  which_java
-    return StanfordNERTagger(ner_path+'/classifiers/english.muc.7class.distsim.crf.ser.gz', ner_path+ '/stanford-ner-3.5.2.jar')
+    return StanfordNERTagger(ner_path+'/classifiers/english.muc.7class.distsim.crf.ser.gz', ner_path+ '/stanford-ner-3.9.2.jar')
 
 if __name__ == "__main__":
     print(parser_path)
