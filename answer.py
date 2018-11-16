@@ -84,8 +84,15 @@ class Answer(object):
         return vectorList
 
     def getSentence(self):
-        for vector in self.vectorList:
-            pass 
+        max_sum = 0
+        max_index = 0
+        for j in range(len(self.vectorList)):
+            vector = self.vectorList[j]
+            curr_sum = sum([i**2 for i in vector])
+            if curr_sum > max_sum:
+                max_sum = curr_sum
+                max_index = j
+        return max_index
         # get the highest ranked sentences
 
     def answerYesNo(self):
