@@ -32,8 +32,8 @@ def ask(line, N):
 
 if __name__ == "__main__":
     tests =[
-        'Starbucks is doing very well lately.',
-        'Overall, while it may seem there is already a Starbucks on every corner, Starbucks still has a lot of room to grow.',
+       'Starbucks is doing very well lately.',
+       'Overall, while it may seem there is already a Starbucks on every corner, Starbucks still has a lot of room to grow.',
        'They just began expansion into food products, which has been going quite well so far for them.',
        'I can attest that my own expenditure when going to Starbucks has increased, in lieu of these food products.',
        'Starbucks is also indeed expanding their number of stores as well.',
