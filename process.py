@@ -2,7 +2,6 @@ import nltk
 from sys import stdin
 from nltk.tag.stanford import StanfordNERTagger
 from nltk.tag import StanfordNERTagger
-#from nltk.tag.stanford import NERTagger
 from stanford_utils import *
 
 
@@ -68,31 +67,28 @@ def yesno(question, sentence):
     tags = tagSent(sentence)
     return sentence
 
-def getSent(words):
-    return "Alice knows last year about New York at 10:00a.m."
 
-for line in stdin:
-    sentence = getSent(line)
+def getTag(line):
     words = line.lower().split()
-    if len(words) < 2:
-        print("Could you be more specific?")
-        continue
+    # if len(words) < 2:
+        # print("Could you be more specific?")
+        # continue
     if words[0] == "who" or (words[0] == "to" and words == "whom"):
-        print(who(line, sentence))
+        return "WHO"
     elif words[0] == "when":
-        print(when(line, sentence))
+        return "WHEN"
     elif words[0] == "where":
-        print(where(line, sentence))
+        return "WHERE"
     elif words[0] == "what":
-        print(what(line, sentence))
+        return "WHAT"
     elif words[0] == "which":
-        print(which(line, sentence))
+        return "WHICH"
     elif words[0] == "how" and words[1] == "many":
-        print(howmany(line, sentence))
+        return "HOWMANY"
     elif words[0] == "how" and words[1] == "much":
-        print(howmuch(line, sentence))
+        return "HOWMANY"
     elif words[0] == "how":
-        print(how(line, sentence))
+        return "HOW"
     else:
-        print(yesno(line, sentence))
+        return "YESNO"
 
