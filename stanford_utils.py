@@ -5,7 +5,8 @@ from nltk.tag.stanford import StanfordNERTagger
 dir = os.getcwd()
 parser_path = dir + '/stanford-parser-full/'
 ner_path = dir + '/stanford-ner'
-which_java = "C:/Program Files/Java/jdk1.8.0_161/bin/java.exe"
+which_java = '/usr/bin/java'
+# windows: which_java = "C:/Program Files/Java/jdk1.8.0_161/bin/java.exe"
 
 
 def new_parser():
