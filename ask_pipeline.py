@@ -1,22 +1,33 @@
 import question1
+import sys
 
-def ask(line, output):
-    with open(output, 'a') as oup:
-        q1 = question1.askWho(line)
-        if q1 is not None and q1.strip():
-            oup.write(q1 + '\n')
+def ask(line, N):
+    q1 = question1.askWho(line)
+    if q1 is not None and q1.strip():
+        N -= 1
+        print(q1)
+    if N == 0:
+      return N
 
-        q1 = question1.askWhen(line)
-        if q1 is not None and q1.strip():
-            oup.write(q1 + '\n')
+    q1 = question1.askWhen(line)
+    if q1 is not None and q1.strip():
+        N -= 1
+        print(q1)
+    if N == 0:
+      return N
 
-        q1 = question1.askDoWhat(line)
-        if q1 is not None and q1.strip():
-            oup.write(q1 + '\n')
+    q1 = question1.askDoWhat(line)
+    if q1 is not None and q1.strip():
+        N -= 1
+        print(q1)
+    if N == 0:
+      return N
 
-        q1 = question1.askWhere(line)
-        if q1 is not None and q1.strip():
-            oup.write(q1 + '\n')
+    q1 = question1.askWhere(line)
+    if q1 is not None and q1.strip():
+        N -= 1
+        print(q1)
+    return N
 
 
 if __name__ == "__main__":
