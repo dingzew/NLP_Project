@@ -10,7 +10,6 @@ import os
 import re
 import sys
 import math
-from textblob import TextBlob
 from stanford_utils import *
 from tree_file import *
 

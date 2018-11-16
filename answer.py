@@ -11,11 +11,12 @@ import re
 import sys
 import math
 
+from nltk.stem.wordnet import WordNetLemmatizer
 import answer_yesno
 from process import *
 # nltk.download('punkt')
 # nltk.download('stopwords')
-
+lemma = WordNetLemmatizer()
 
 class Answer(object):
     def __init__(self, orig, sentences, question):
@@ -37,7 +38,7 @@ class Answer(object):
     def preprocessSentence(self, sentList):
         for words in sentList:
             words = [w for w in words if w not in stopwords.words()]
-            words = [w.lemmatize() for w in words]
+            words = [lemma.lemmatize(w) for w in words]
         return sentList
 
     def preprocessQuestion(self):
@@ -54,7 +55,6 @@ class Answer(object):
 
         for words in sentList:
             d = dict()
-
             for word in words:
                 if word in questionDict:
                     d[word] = d.get(word, 0) + 1
@@ -143,6 +143,8 @@ def main(argv):
     with open (articleLoc, "r", encoding="utf-8") as art_doc:
         article = art_doc.read()
         # article = art_doc.decode('utf-8')
+        article = article.split('\n')[1:]
+        article = " ".join(article)
         article = article.encode('ascii', errors='ignore') 
         article = article.decode("ascii")
 
@@ -153,11 +155,10 @@ def main(argv):
         tokenized_text = nltk.word_tokenize(sentence)
         res = []
         for w in tokenized_text:
-            try:
-                w = re.findall(r'[\w.].*[\w.]', s)[0]
-                res.append(w.lower())
-            except:
-                pass
+            
+            # w = re.findall(r'[\w.].*[\w.]', s)[0]
+            res.append(w.lower())
+
         token_list.append(res)
 
     with open (questionLoc, "r", encoding="utf-8") as ques_doc:
