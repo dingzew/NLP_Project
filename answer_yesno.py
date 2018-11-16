@@ -12,7 +12,6 @@ import sys
 import math
 from textblob import TextBlob
 from stanford_utils import *
-from stanfordcorenlp import StanfordCoreNLP
 from tree_file import *
 
 stemmer = PorterStemmer()
