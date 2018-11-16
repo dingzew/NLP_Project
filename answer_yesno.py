@@ -13,23 +13,62 @@ import math
 from textblob import TextBlob
 from stanford_utils import *
 from stanfordcorenlp import StanfordCoreNLP
+from tree_file import *
 
 stemmer = PorterStemmer()
-parser = new_parser()
+lemma = WordNetLemmatizer()
 yesno_list = ['be','have','do','will','can','would','could','']
-tree = (parser.parse(["Is it true that it angered many residents of the thirteen colonies?"]))
-print(tree.children())
-#print(WordNetLemmatizer().lemmatize("would",'v'))
 
-def getAnswer(question, target):
-	question_list = question.split()
-	if (len(question_list) == 0):
-		return question
-	feature = WordNetLemmatizer().lemmatize(question_list[0],'v')
-	if (feature.lower() not in yesno_list):
-		return question
-	# output yes/no instance
-	parsed_ques = parser.parse([question])
-	parsed_ans = parser.parse([target])
+def positive_exist(word, patt_tree):
+    morphy = lemma.lemmatize(word)
+    synset = wordnet.synsets(word)
+    for sub in patt_tree:
+        for cand in sub.leaves():
+            if word == cand:
+                return True
+            for syn in synset: 
+                for lem in syn.lemmas(): 
+                    if cand == lem.name() or lemma.lemmatize(cand) == lem.name():
+                        return True
+                    for ant in lem.antonyms():
+                        if cand == ant.name():
+                            return False
+    return False
+
+
+def get_yesno_answer(question, target):
+    question_list = question.split()
+    if (len(question_list) == 0):
+        return question
+    feature = lemma.lemmatize(question_list[0].lower(),'v')
+    if (feature.lower() not in yesno_list):
+        return question
+    # output yes/no instance
+    parsed_ques = generateTree(question)
+    parsed_ans = generateTree(target)
+
+    nouns_label = get_phrases(parsed_ques, "NN") + get_phrases(parsed_ques, "NNS")
+    ans_label = get_phrases(parsed_ans, "NN") + get_phrases(parsed_ans, "NNS")
+    for tree in nouns_label:
+        noun_word = tree.leaves()[0]
+        if not positive_exist(noun_word, ans_label):
+            return False
+
+    np_label = get_phrases(parsed_ques, "NNP") + get_phrases(parsed_ques, "NNPS")
+    ans_label = get_phrases(parsed_ans, "NNP") + get_phrases(parsed_ans, "NNPS")
+    for tree in np_label:
+        noun_word = tree.leaves()[0]
+        if not positive_exist(noun_word, ans_label):
+            return False
+
+    # TODO: check verb / adj occurance
+    return True
+
+def get_ans_wrapper(question, target):
+    ans = get_yesno_answer(question, target)
+    if "not" in target:
+        return not ans
+    return ans
+
 
 

@@ -8,14 +8,15 @@ import os
 import re
 import sys
 import math
-from textblob import TextBlob
+
+import answer_yesno
 
 # nltk.download('punkt')
 # nltk.download('stopwords')
 
 class Answer(object):
     def __init__(self, sentences, question, questionType):
-        self.sentences = sentences
+        self.original = sentences
         self.question = question
         self.questionType = questionType
         self.length = 0
@@ -23,7 +24,7 @@ class Answer(object):
             for word in self.question:
                 self.length += s.count(word)
 
-        self.sentences = self.preprocessSentence(self.sentences)
+        self.sentences = self.preprocessSentence(self.original)
         self.questionSynset = self.preprocessQuestion()
         self.questionDict = self.compQues(self.question)
         self.sentDict = self.calculToken(self.sentences, self.questionDict)
@@ -95,12 +96,19 @@ class Answer(object):
         return max_index
         # get the highest ranked sentences
 
-    def answerYesNo(self):
-        pass
+    def answer_yesno(self):
+        target_index = self.getSentence()
+        target = self.original[target_index]
+        answer = answer_yesno.get_ans_wrapper(self.question, target)
+        if answer:
+            return "Yes."
+        else:
+            return "No."
 
-    def answerWh(self):
-        pass
-
+    def answer_wh(self):
+        target_index = self.getSentence()
+        target = self.original[target_index]
+        return target
 
 ''' test script
 text = "Early life and education\nDonovan was born on March 4, 1982, in Ontario, California, to Donna Kenney-Cash, a special education teacher, and Tim Donovan, a semi-professional ice hockey player originally from Canada, which makes Donovan a Canadian citizen by descent. His mother raised him and his siblings in Redlands, California.\nWhen Donovan was six, his mother allowed him to join an organized league, and he scored seven goals in his first game. Donovan was a member of Cal Heat – a club based in nearby Rancho Cucamonga under coach Clint Greenwood. In 1997, he was accepted into U.S. Youth Soccer's Olympic Development Program. He attended Redlands East Valley High School when not engaged in soccer activities elsewhere. In 1999, Donovan attended the IMG Academy in Bradenton, Florida, part of U.S. Soccer's training program."
