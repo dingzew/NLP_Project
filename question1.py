@@ -5,6 +5,7 @@ def askWho(sentence):
     if (NER_file.contains_person(sentence)):
         tree = tree_file.generateTree(sentence)
         vp = tree_file.get_phrases(tree, "VP")
+        if not vp: return ''
         question = "Who " + tree_file.merge(vp[0])[0] + "?"
         return question
     else:
@@ -15,6 +16,7 @@ def askWhoHelper(sentence):
     # try:
         tree = tree_file.generateTree(sentence)
         vp = tree_file.get_phrases(tree, "VP")
+        if not vp: return ''
         question = "What " + tree_file.merge(vp[0])[0] + "?"
         return question
     # except Exception as e:
@@ -26,6 +28,7 @@ def askWhen(sentence):
         tree = tree_file.generateTree(sentence)
         dic = tree_file.main_sentence_structure(tree)
         vp = tree_file.get_phrases(tree, "VP")
+        if not vp: return ''
         if ("main" not in dic):
             return None
         question = "When did " + dic["main"] + " " + tree_file.merge(vp[0])[0] + "?"
@@ -38,6 +41,8 @@ def askDoWhat(sentence):
     tree = tree_file.generateTree(sentence)
     dic = tree_file.main_sentence_structure(tree)
     time = tree_file.testTime(tree)
+    if "main" not in dic:
+        return None
     if time == "past":
         question = "What did " + dic["main"] + " do" + "?"
         return question
@@ -52,6 +57,8 @@ def askWhere(sentence):
     if (NER_file.contains_loc(sentence)):
         tree = tree_file.generateTree(sentence)
         dic = tree_file.fine_structures(tree)
+        if  "V" not in dic or "main" not in dic:
+            return None
         time = tree_file.testTime(tree)
         if time == "past":
             question = "When did " + dic["main"] + " " + dic["V"] + "?"

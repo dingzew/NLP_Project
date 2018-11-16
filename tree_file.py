@@ -64,8 +64,10 @@ def testTime(tree):
 def main_sentence_structure(tree):
     dic = {}
     phrases = get_phrases(tree, "NP")
+    if not phrases: return dic
     dic["main"] = merge(phrases[0])[0]
     phrases = get_phrases(tree, "VP")
+    if not phrases: return dic
     dic["what"] = merge(phrases[0])[0]
     return dic
 
@@ -74,6 +76,7 @@ def main_sentence_structure(tree):
 def fine_structures(tree):
     dic = {}
     phrases = get_phrases(tree, "NP")
+    if not phrases: return dic
     dic["main"] = merge(phrases[0])[0]
     phrases = get_phrases(tree, "VP")
     for phrase in phrases:

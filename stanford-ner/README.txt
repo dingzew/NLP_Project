@@ -1,4 +1,4 @@
-Stanford NER - v3.5.2 - 2015-04-20
+Stanford NER - v3.9.2 - 2018-10-16
 ----------------------------------------------
 
 This package provides a high-performance machine learning based named
@@ -12,7 +12,7 @@ Original CRF code by Jenny Finkel.
 Additional modules, features, internationalization, compaction, and
 support code by Christopher Manning, Dan Klein, Christopher Cox, Huy Nguyen
 Shipra Dingare, Anna Rafferty, and John Bauer.
-This release prepared by Jon Gauthier.
+This release prepared by Jason Bolton.
 
 LICENSE
 
@@ -24,7 +24,7 @@ For more information, bug reports, and fixes, contact:
     Stanford CA 94305-9020
     USA
     java-nlp-support@lists.stanford.edu
-    http://www-nlp.stanford.edu/software/CRF-NER.shtml
+    https://nlp.stanford.edu/software/CRF-NER.html
 
 CONTACT
 
@@ -36,7 +36,7 @@ TUTORIAL
 
 Quickstart guidelines, primarily for end users who wish to use the included NER
 models, are below.  For further instructions on training your own NER model,
-go to http://www-nlp.stanford.edu/software/crf-faq.shtml.
+go to https://nlp.stanford.edu/software/crf-faq.html.
 
 INCLUDED SERIALIZED MODELS / TRAINING DATA
 
@@ -67,31 +67,30 @@ more memory.  The distsim models are included in the release package.
 The nodistsim versions of the same models may be available on the
 Stanford NER webpage.
 
-Finally, we have models for other languages, include two German models,
+Finally, we have models for other languages, including two German models,
 a Chinese model, and a Spanish model.  The files for these models can be
 found at:
 
-http://nlp.stanford.edu/software/CRF-NER.shtml
+http://nlp.stanford.edu/software/CRF-NER.html
 
 
 QUICKSTART INSTRUCTIONS
 
 This NER system requires Java 1.8 or later.
 
-Providing java is on your PATH, you should just be able to run an NER
-GUI demonstration by just clicking.  It might work to double-click on
-the stanford-ner.jar archive but this may well fail as the operating
-system does not give Java enough memory for our NER system, so it is
-safer to instead double click on the ner-gui.bat icon (Windows) or
-ner-gui.sh (Linux/Unix/MacOSX).  Then, from the Classifier menu, either
-load a CRF classifier from the classifiers directory of the distribution
-or you should be able to use the Load Default CRF option.  You can then
-either load a text file or web page from the File menu, or decide to use
-the default text in the window.  Finally, you can now named entity tag
-the text by pressing the Run NER button.
+Providing java is on your PATH, you should be able to run an NER GUI
+demonstration by just clicking.  It might work to double-click on the
+stanford-ner.jar archive but this may well fail as the operating system
+does not give Java enough memory for our NER system, so it is safer to
+instead double click on the ner-gui.bat icon (Windows) or ner-gui.sh
+(Linux/Unix/MacOSX).  Then, using the top option from the Classifier
+menu, load a CRF classifier from the classifiers directory of the
+distribution.  You can then `either load a text file or web page from
+the File menu, or decide to use the default text in the window. Finally,
+you can now named entity tag the text by pressing the Run NER button.
 
 From a command line, you need to have java on your PATH and the
-stanford-ner.jar file in your CLASSPATH.  (The way of doing this depends on
+stanford-ner.jar file and the lib directory in your CLASSPATH.  (The way of doing this depends on
 your OS/shell.)  The supplied ner.bat and ner.sh should work to allow
 you to tag a single file.  For example, for Windows:
 
@@ -100,26 +99,24 @@ you to tag a single file.  For example, for Windows:
 Or on Unix/Linux you should be able to parse the test file in the distribution
 directory with the command:
 
-java -mx600m edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier classifiers/all.3class.crf.ser.gz -textFile sample.txt
+java -mx600m -cp stanford-ner.jar:lib/* edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier classifiers/english.all.3class.distsim.crf.ser.gz -textFile sample.txt
+
+Here's an output option that will print out entities and their class to
+the first two columns of a tab-separated columns output file:
+
+java -mx600m -cp stanford-ner.jar:lib/* edu.stanford.nlp.ie.crf.CRFClassifier -loadClassifier classifiers/english.all.3class.distsim.crf.ser.gz -outputFormat tabbedEntities -textFile sample.txt > sample.tsv
 
 When run from a jar file, you also have the option of using a serialized
 classifier contained in the jar file.
 
-If you use the -jar command, or double-click the jar file, NERGUI is
-automatically started, and you will also be given the option (under the
-'Classifier' menu item) to load a default supplied classifier:
-
-java -mx1000m -jar stanford-ner.jar
-
 USING FULL STANFORD CORENLP NER FUNCTIONALITY
 
-This standalone distribution also allows access to the full NER 
-capabilities of the Stanford CoreNLP pipeline.  These capabilities
+This standalone distribution also allows access to the full NER
+capabilities of the Stanford CoreNLP pipeline. These capabilities
 can be accessed via the NERClassifierCombiner class.
-
-NERClassifierCombiner allows for multiple CRF's to be layered together,
+NERClassifierCombiner allows for multiple CRFs to be used together,
 and has options for recognizing numeric sequence patterns and time
-patterns with Stanford CoreNLP's SUTime. 
+patterns with the rule-based NER of SUTime.
 
 Suppose one combines three CRF's CRF-1,CRF-2, and CRF-3 with the
 NERClassifierCombiner.  When the NERClassiferCombiner runs, it will
@@ -143,7 +140,7 @@ list of CRF's to be combined by the NERClassifierCombiner.  Some serialized
 CRF's are provided in the classifiers directory.  In this example the CRF's
 trained on the CONLL 4 class data and the MUC 7 class data are being combined.
 
-When the flag "-ner.useSUTime" is followed by "false", SUTime is shut off.  You should 
+When the flag "-ner.useSUTime" is followed by "false", SUTime is shut off.  You should
 note that when the "false" is omitted, the text "4 days ago" suddenly is
 tagged with DATE.  These are the kinds of phrases SUTime can identify.
 
@@ -178,14 +175,14 @@ classifiers/example.serialized.ncc.ncc.ser.gz -map word=0,answer=1 \
 -testFile sample-conll-file.txt
 
 For a more exhaustive description of NERClassifierCombiner go to
-http://nlp.stanford.edu/software/ncc-faq.shtml
+http://nlp.stanford.edu/software/ncc-faq.html
 
 PROGRAMMATIC USE
 
 The NERDemo file illustrates a couple of ways of calling the system
 programatically.  You should get the same results from
 
-java -mx300m NERDemo classifiers/all.3class.crf.ser.gz sample.txt
+java -cp stanford-ner.jar:lib/*:. -mx300m NERDemo classifiers/english.all.3class.distsim.crf.ser.gz sample.txt
 
 as from using CRFClassifier.  For more information on API calls, look in
 the enclosed javadoc directory: load index.html in a browser and look
@@ -198,15 +195,15 @@ SERVER VERSION
 
 The NER code may also be run as a server listening on a socket:
 
-java -mx1000m -cp stanford-ner.jar edu.stanford.nlp.ie.NERServer 1234
+java -mx1000m -cp stanford-ner.jar:lib/* edu.stanford.nlp.ie.NERServer 1234
 
 You can specify which model to load with flags, either one on disk:
 
-java -mx1000m -cp stanford-ner.jar edu.stanford.nlp.ie.NERServer -loadClassifier classifiers/all.3class.crf.ser.gz 1234
+java -mx1000m -cp stanford-ner.jar:lib/* edu.stanford.nlp.ie.NERServer -loadClassifier classifiers/all.3class.crf.ser.gz 1234
 
-Or if you have put a model inside the jar file:
+Or if you have put a model inside the jar file, as a resource under, say, models:
 
-java -mx1000m -cp stanford-ner.jar edu.stanford.nlp.ie.NERServer -loadJarClassifier all.3class.crf.ser.gz 1234
+java -mx1000m -cp stanford-ner.jar:lib/* edu.stanford.nlp.ie.NERServer -loadClassifier models/all.3class.crf.ser.gz 1234
 
 
 RUNNING CLASSIFIERS FROM INSIDE A JAR FILE
@@ -236,9 +233,19 @@ PERSON	ORGANIZATION	LOCATION
 CHANGES
 --------------------
 
-2015-04-20    3.5.2     synch standalone and CoreNLP functionality 
+2018-10-16    3.9.2     Update for compatibility 
 
-2015-01-29    3.5.1     Substantial accuracy improvements 
+2018-02-27    3.9.1     KBP ner models for Chinese and Spanish 
+
+2017-06-09    3.8.0     Updated for compatibility
+
+2016-10-31    3.7.0     Improved Chinese NER
+
+2015-12-09    3.6.0     Updated for compatibility
+
+2015-04-20    3.5.2     synch standalone and CoreNLP functionality
+
+2015-01-29    3.5.1     Substantial accuracy improvements
 
 2014-10-26    3.5.0     Upgrade to Java 1.8
 
