@@ -1,13 +1,16 @@
 import tree_file
 import NER_file
 
+def postprocess(text):
+    return text.replace(" , ", ", ").replace(" '", "'")
+
 def askWho(sentence):
     if (NER_file.contains_person(sentence)):
         tree = tree_file.generateTree(sentence)
         vp = tree_file.get_phrases(tree, "VP")
         if not vp: return ''
         question = "Who " + tree_file.merge(vp[0])[0] + "?"
-        return question
+        return postprocess(question)
     else:
         return askWhoHelper(sentence)
 
@@ -18,7 +21,7 @@ def askWhoHelper(sentence):
         vp = tree_file.get_phrases(tree, "VP")
         if not vp: return ''
         question = "What " + tree_file.merge(vp[0])[0] + "?"
-        return question
+        return postprocess(question)
     # except Exception as e:
     #     return None
 
@@ -32,7 +35,7 @@ def askWhen(sentence):
         if ("main" not in dic):
             return None
         question = "When did " + dic["main"] + " " + tree_file.merge(vp[0])[0] + "?"
-        return question
+        return postprocess(question)
     else:
         return None
 
@@ -45,13 +48,11 @@ def askDoWhat(sentence):
         return None
     if time == "past":
         question = "What did " + dic["main"] + " do" + "?"
-        return question
     elif time == "single":
         question = "What does " + dic["main"] + " do" + "?"
-        return question
     else:
         question = "What do " + dic["main"] + " do" + "?"
-        return question
+    return postprocess(question)
 
 def askWhere(sentence):
     if (NER_file.contains_loc(sentence)):
@@ -62,17 +63,13 @@ def askWhere(sentence):
         time = tree_file.testTime(tree)
         if time == "past":
             question = "When did " + dic["main"] + " " + dic["V"] + "?"
-            return question
         elif time == "single":
             question = "What does " + dic["main"] + " " +dic["V"] + "?"
-            return question
         else:
             question = "What do " + dic["main"] +  " " + dic["V"] + "?"
-            return question
+        return postprocess(question)
     else:
         return None
-
-
 
 
 if __name__ == "__main__":
