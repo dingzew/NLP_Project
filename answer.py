@@ -131,7 +131,6 @@ class Answer(object):
         return target
 
     def get_answer(self):
-        return self.answer_wh()
         if self.tag == "YESNO":
             return self.answer_yesno()
         else:
