@@ -19,14 +19,16 @@ from process import *
 lemma = WordNetLemmatizer()
 
 class Answer(object):
-    def __init__(self, orig, sentences, question):
+    def __init__(self, orig, sentences):
         self.original = orig
+        
+        self.length = 0
+        
+        self.sentences = self.preprocessSentence(sentences) # tokenized
+    
+    def setQuestion(self, question):
         self.question = question
         self.tag = getTag(question)
-
-        self.length = 0
-
-        self.sentences = self.preprocessSentence(sentences) # tokenized
         for s in self.sentences:
             for word in self.question:
                 self.length += s.count(word)
@@ -167,10 +169,11 @@ def main(argv):
         question = question.decode("ascii")
 
     question_list = question.split("\n")
+    A = Answer(sent_text, token_list)
     for ques in question_list:
         #try:
         ques = re.findall(r'[\w.].*[\w.]', ques)[0]
-        A = Answer(sent_text, token_list, ques.lower())
+        A.setQuestion(ques.lower())
         print (A.get_answer())
         # except:
             # print ("NULL")
