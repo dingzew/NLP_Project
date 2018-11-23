@@ -137,8 +137,22 @@ class Answer(object):
             sent = self.answer_wh()
             if self.tag == "WHO":
                 return who(self.question, sent)
-            if self.tag == "WHERE":
+            elif self.tag == "WHERE":
                 return where(self.question, sent)
+            elif self.tag == "WHEN":
+                return when(self.question, sent)
+            elif self.tag == "WHAT":
+                return what(self.question, sent)
+            elif self.tag == "WHICH":
+                return which(self.question, sent)
+            elif self.tag == "HOW":
+                return how(self.question, sent)
+            elif self.tag == "HOWMANY":
+                return howmany(self.question, sent)
+            elif self.tag == "HOWMUCH":
+                return howmuch(self.question, sent)
+            elif self.tag == "WHY":
+                return why(self.question, sent)
             else:
                 return sent
 

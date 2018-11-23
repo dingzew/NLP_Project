@@ -16,30 +16,32 @@ def tokenizeWord(sentence):
 
 def tagSent(sentence):
     tokens = tokenizeWord(sentence)
-    path_to_model = "stanford-ner/classifiers/english.conll.4class.distsim.crf.ser.gz"
+    path_to_model = "stanford-ner/classifiers/english.muc.7class.distsim.crf.ser.gz"
     path_to_jar = "stanford-ner/stanford-ner.jar"
     st = StanfordNERTagger(path_to_model, path_to_jar)
     return st.tag(tokens)
 
 def who(question, sentence):
     tags = tagSent(sentence)
-    for tag in tags:
-        if tag[1] == "PERSON":
-            return tag[0]
-    return sentence
+    answer = [tag[0] for tag in tags if tag[1] == 'PERSON']
+    if len(answer):
+        return ' '.join(answer)
+    else:
+        return sentence
 
 def when(question, sentence):
     tags = tagSent(sentence)
-    return sentence
+    answer = [tag[0] for tag in tags if tag[1] == 'DATE' or tag[1] == 'TIME']
+    if len(answer):
+        return ' '.join(answer)
+    else:
+        return sentence
 
 def where(question, sentence):
     tags = tagSent(sentence)
-    answer = ""
-    for tag in tags:
-        if tag[1] == "LOCATION":
-            answer += tag[0]+" "
-    if answer != "":
-        return answer
+    answer = [tag[0] for tag in tags if tag[1] == 'LOCATION']
+    if len(answer):
+        return ' '.join(answer)
     else:
         return sentence
 
@@ -61,7 +63,11 @@ def howmany(question, sentence):
 
 def howmuch(question, sentence):
     tags = tagSent(sentence)
-    return sentence
+    answer = [tag[0] for tag in tags if tag[1] == 'MONEY']
+    if len(answer):
+        return ' '.join(answer)
+    else:
+        return sentence
 
 def yesno(question, sentence):
     tags = tagSent(sentence)
@@ -73,7 +79,7 @@ def getTag(line):
     # if len(words) < 2:
         # print("Could you be more specific?")
         # continue
-    if words[0] == "who" or (words[0] == "to" and words == "whom"):
+    if words[0] == "who":# or (words[0] == "to" and words[1] == "whom"):
         return "WHO"
     elif words[0] == "when":
         return "WHEN"
@@ -86,9 +92,11 @@ def getTag(line):
     elif words[0] == "how" and words[1] == "many":
         return "HOWMANY"
     elif words[0] == "how" and words[1] == "much":
-        return "HOWMANY"
+        return "HOWMUCH"
     elif words[0] == "how":
         return "HOW"
+    elif words[0] == "why":
+        return "WHY"
     else:
         return "YESNO"
 
