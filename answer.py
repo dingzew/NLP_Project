@@ -84,7 +84,7 @@ class Answer(object):
         path_to_jar = "stanford-ner/stanford-ner.jar"
         st = StanfordNERTagger(path_to_model, path_to_jar)
         question = st.tag(tokens)
-#        print(question)
+#       
         vectorList = []
         for sent in self.sentDict:
             vector = []

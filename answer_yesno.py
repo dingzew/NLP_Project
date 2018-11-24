@@ -34,39 +34,43 @@ def positive_exist(word, patt_tree):
     return False
 
 
-def get_yesno_answer(question, target):
-    question_list = question.split()
+def get_yesno_answer(question_list, question, target):
     if (len(question_list) == 0):
         return question
     feature = lemma.lemmatize(question_list[0].lower(),'v')
+
     if (feature.lower() not in yesno_list):
         return question
     # output yes/no instance
     parsed_ques = generateTree(question)
     parsed_ans = generateTree(target)
 
-    nouns_label = get_phrases(parsed_ques, "NN") + get_phrases(parsed_ques, "NNS")
-    ans_label = get_phrases(parsed_ans, "NN") + get_phrases(parsed_ans, "NNS")
-    for tree in nouns_label:
-        noun_word = tree.leaves()[0]
-        if not positive_exist(noun_word, ans_label):
-            return False
+    labels = [["NN","NNS","NNP","NNPS"]]
+              #["VB","VBZ","VBP","VBD","VBN","VBG"],
+              #["JJ","JJR","JJS"],
+              #["RB","RBS","RBR"]]
 
-    np_label = get_phrases(parsed_ques, "NNP") + get_phrases(parsed_ques, "NNPS")
-    ans_label = get_phrases(parsed_ans, "NNP") + get_phrases(parsed_ans, "NNPS")
-    for tree in np_label:
-        noun_word = tree.leaves()[0]
-        if not positive_exist(noun_word, ans_label):
-            return False
+    for label_set in labels:
+        ques_label = []
+        ans_label = []
+        for label in label_set:
+            ques_label += get_phrases(parsed_ques, label)
+            ans_label += get_phrases(parsed_ans, label)
 
-    # TODO: check verb / adj occurance
+        for tree in ques_label:
+            word = tree.leaves()[0]
+            if not positive_exist(word, ans_label):
+                return False
+
     return True
 
-def get_ans_wrapper(question, target):
-    ans = get_yesno_answer(question, target)
+def get_ans_wrapper(original, question, target):
+    print(target)
+    ans = get_yesno_answer(original, question, target)
     if "not" in target:
         return not ans
     return ans
+
 
 
 
