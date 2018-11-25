@@ -45,4 +45,4 @@ if __name__ == "__main__":
        'Increase in supply... well you know the rules...',
     ]
     for line in tests:
-        ask(line)
+        ask(line, 10)
