@@ -16,6 +16,7 @@ from process import *
 
 
 lemma = WordNetLemmatizer()
+NER_PARSER = new_NERtagger()
 
 # when, who 
 # why
@@ -65,5 +66,9 @@ def why(question, target):
     answer = target[target.find(start):target.find(end)+len(end)]
     return answer[0].upper() + answer[1:]
 
+
+def reformulate(question, question_type):
+    if question_type == "WHAT":
+        pass
 
 target = "Since the two sides of the lower jaw are not joined together, the lower incisors are farther apart, giving the kangaroo a wider bite."
