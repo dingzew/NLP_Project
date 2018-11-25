@@ -29,7 +29,8 @@ class Answer(object):
     def setQuestion(self, question):
         self.raw_question = question
         self.tag = getTag(question)
-        self.question = re.compile('\w+').findall(question.lower())
+        question = re.compile('\w+').findall(question.lower())
+        self.question = [lemma.lemmatize(w) for w in question if w not in string.punctuation and w not in stopwords.words('english')]
         self.questionSynset = self.preprocessQuestion()
         self.questionDict = self.compQues(self.question)
         self.sentDict = self.calculToken(self.sentences, self.questionDict)
@@ -37,7 +38,7 @@ class Answer(object):
 
     def preprocessSentence(self, sentList):
         for index,words in enumerate(sentList):
-            sentList[index] = [lemma.lemmatize(w) for w in words if w not in stopwords.words()]
+            sentList[index] = [lemma.lemmatize(w) for w in words if w not in string.punctuation and w not in stopwords.words('english')]
         return sentList
 
     def preprocessQuestion(self):
@@ -58,7 +59,7 @@ class Answer(object):
                 if word in questionDict:
                     d[word] = d.get(word, 0) + 1
             for word in d:
-                d[word] = d[word] / len(words)
+                d[word] = d[word] / math.sqrt(len(words))
             sentDictList.append(d)
         return sentDictList
 
@@ -79,20 +80,17 @@ class Answer(object):
         return math.log(len(self.sentences) / (count + 1))
 
     def similarity(self, question):
-        tokens = nltk.word_tokenize(self.raw_question)
-        path_to_model = "stanford-ner/classifiers/english.muc.7class.distsim.crf.ser.gz"
-        path_to_jar = "stanford-ner/stanford-ner.jar"
-        st = StanfordNERTagger(path_to_model, path_to_jar)
-        question = st.tag(tokens)
-#       
+#        tokens = nltk.word_tokenize(self.raw_question)
+#        path_to_model = "stanford-ner/classifiers/english.muc.7class.distsim.crf.ser.gz"
+#        path_to_jar = "stanford-ner/stanford-ner.jar"
+#        st = StanfordNERTagger(path_to_model, path_to_jar)
+#        question = st.tag(tokens)
+#
         vectorList = []
         for sent in self.sentDict:
             vector = []
-            for word,tag in question:
-                word = word.lower()
+            for word in self.question:
                 tfidf = self.termFreq(sent, word) * self.inverseFreq(word)
-                if tag != 'O':
-                    tfidf *= 2
                 vector.append(tfidf)
             vectorList.append(vector)
         return vectorList
@@ -103,9 +101,9 @@ class Answer(object):
             vector = self.vectorList[j]
             curr_sum = sum([i for i in vector])
             score.append((curr_sum, j))
-            score.sort(key = lambda x : x[0], reverse=True)
+        score.sort(key = lambda x : x[0], reverse=True)
         j = 0
-        while True:
+        while j < len(self.sentences):
             res = []
             parsed_ques = generateTree(self.original[score[j][1]])
             for tag in VERB:
@@ -119,7 +117,7 @@ class Answer(object):
     def answer_yesno(self):
         target_index = self.getSentence()
         target = self.original[target_index]
-        answer = answer_yesno.get_ans_wrapper(self.raw_question, target)
+        answer = answer_yesno.get_ans_wrapper(self.raw_question, self.question, target)
         if answer:
             return "Yes."
         else:
@@ -180,12 +178,16 @@ def main(argv):
 
     sent_text = nltk.sent_tokenize(article)
     sent_text = [s for s in sent_text]
+    new_sent_text = []
     token_list = []
     for sentence in sent_text:
         tokenized_text = nltk.word_tokenize(sentence)
-        res = [w.lower() for w in tokenized_text]
 
-        token_list.append(res)
+        res = [w.lower() for w in tokenized_text]
+        if len(res) < 60:
+            new_sent_text.append(sentence)
+            token_list.append(res)
+    sent_text = new_sent_text
 
     with open (questionLoc, "r", encoding="utf-8") as ques_doc:
         question = ques_doc.read()
