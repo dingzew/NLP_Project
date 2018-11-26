@@ -5,6 +5,10 @@ from nltk.tokenize import word_tokenize
 
 NER_PARSER = new_NERtagger()
 
+""" 
+The section of code below is copied from alvas' answer at https://stackoverflow.com/questions/30664677/extract-list-of-persons-and-organizations-using-stanford-ner-tagger-in-nltk 
+"""
+
 def get_continuous_chunks(tagged_sent):
     continuous_chunk = []
     current_chunk = []
@@ -21,6 +25,11 @@ def get_continuous_chunks(tagged_sent):
         continuous_chunk.append(current_chunk)
     named_entities_str_tag = [(" ".join([token for token, tag in ne]), ne[0][1]) for ne in continuous_chunk]
     return named_entities_str_tag
+
+""" 
+The section of code above is copied from alvas' answer at https://stackoverflow.com/questions/30664677/extract-list-of-persons-and-organizations-using-stanford-ner-tagger-in-nltk 
+"""
+
 
 
 """
