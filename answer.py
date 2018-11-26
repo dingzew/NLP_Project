@@ -117,7 +117,8 @@ class Answer(object):
     def answer_yesno(self):
         target_index = self.getSentence()
         target = self.original[target_index]
-        answer = answer_yesno.get_ans_wrapper(self.raw_question, self.question, target)
+        sent_list = self.sentences[target_index]
+        answer = answer_yesno.get_ans_wrapper(self.question, self.raw_question, target, sent_list)
         if answer:
             return "Yes."
         else:
