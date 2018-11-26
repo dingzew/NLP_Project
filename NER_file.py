@@ -1,4 +1,6 @@
 from stanford_utils import *
+
+import nltk
 from nltk.tokenize import word_tokenize
 
 NER_PARSER = new_NERtagger()
@@ -17,23 +19,24 @@ def get_continuous_chunks(tagged_sent):
     # Flush the final current_chunk into the continuous_chunk, if any.
     if current_chunk:
         continuous_chunk.append(current_chunk)
-    return continuous_chunk
+    named_entities_str_tag = [(" ".join([token for token, tag in ne]), ne[0][1]) for ne in continuous_chunk]
+    return named_entities_str_tag
 
 
+"""
 def detect_NER_Phrase(phrase):
     tagged_sent = NER_PARSER.tag(phrase.split())
     named_entities = get_continuous_chunks(tagged_sent)
     named_entities_str_tag = [(" ".join([token for token, tag in ne]), ne[0][1]) for ne in named_entities]
 
     return named_entities_str_tag
+"""
 
 
 def detect_NER_word(sentence):
     tokenized_text = word_tokenize(sentence)
     classified_text = NER_PARSER.tag(tokenized_text)
     return classified_text
-
-
 
 def contains_person(sentence):
     list = detect_NER_word(sentence)
@@ -75,7 +78,18 @@ def contains_loc(sentence):
             return True
     return False
 
+def get_tokens(sentence):
+    tokenized_text = nltk.word_tokenize(sentence)
+    tagged = nltk.pos_tag(tokenized_text)
+    return tagged
 
+def contains_num(sentence):
+    tokens = get_tokens(sentence)
+    for i in range(len(tokens)):
+        if (i < len(tokens) - 1 and tokens[i][1] == 'CD' and (tokens[i + 1][1] == 'NNS' or tokens[i + 1][1] == 'NN')):
+            return tokens[i + 1]
+        if (i < len(tokens) - 1 and tokens[i][1] == 'DT' and (tokens[i + 1][1] == 'NNS' or tokens[i + 1][1] == 'NN')):
+            return tokens[i + 1]
 
 
 if __name__ == "__main__":

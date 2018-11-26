@@ -1,10 +1,14 @@
 import os
+import logging
 from nltk.parse.stanford import StanfordParser
 from nltk.tag.stanford import StanfordNERTagger
+
+from stanfordcorenlp import StanfordCoreNLP
 
 dir = os.getcwd()
 parser_path = dir + '/stanford-parser-full/'
 ner_path = dir + '/stanford-ner'
+nlp_path = dir + '/stanford-core-nlp-full/'
 #which_java = '/usr/bin/java'
 which_java = "C:/Program Files/Java/jdk1.8.0_161/bin/java.exe"
 
