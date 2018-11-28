@@ -9,8 +9,8 @@ dir = os.getcwd()
 parser_path = dir + '/stanford-parser-full/'
 ner_path = dir + '/stanford-ner'
 nlp_path = dir + '/stanford-core-nlp-full/'
-#which_java = '/usr/bin/java'
-which_java = "C:/Program Files/Java/jdk1.8.0_161/bin/java.exe"
+which_java = '/usr/bin/java'
+#which_java = "C:/Program Files/Java/jdk1.8.0_161/bin/java.exe"
 
 
 def new_parser():
@@ -21,7 +21,7 @@ def new_parser():
 
 def new_NERtagger():
     os.environ['JAVAHOME'] =  which_java
-    return StanfordNERTagger(ner_path+'/classifiers/english.muc.7class.distsim.crf.ser.gz', ner_path+ '/stanford-ner-3.9.2.jar')
+    return StanfordNERTagger(ner_path+'/classifiers/english.muc.7class.distsim.crf.ser.gz', ner_path+ '/stanford-ner.jar')
 
 if __name__ == "__main__":
     print(parser_path)
