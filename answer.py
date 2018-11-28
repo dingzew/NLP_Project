@@ -13,6 +13,7 @@ import math
 
 from nltk.stem.wordnet import WordNetLemmatizer
 import answer_yesno
+import answer_wh
 from process import *
 from tree_file import *
 # nltk.download('punkt')
@@ -117,8 +118,7 @@ class Answer(object):
     def answer_yesno(self):
         target_index = self.getSentence()
         target = self.original[target_index]
-        sent_list = self.sentences[target_index]
-        answer = answer_yesno.get_ans_wrapper(self.question, self.raw_question, target, sent_list)
+        answer = answer_yesno.get_ans_wrapper(self.raw_question, self.question, target)
         if answer:
             return "Yes."
         else:
@@ -135,36 +135,32 @@ class Answer(object):
         else:
             sent = self.answer_wh()
             if self.tag == "WHO":
-                return who(self.question, sent)
+                ans = who(self.question, sent)
             elif self.tag == "WHERE":
-                return where(self.question, sent)
+                ans = where(self.question, sent)
             elif self.tag == "WHEN":
-                return when(self.question, sent)
+                ans = when(self.question, sent)
             elif self.tag == "WHAT":
-                return what(self.question, sent)
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
             elif self.tag == "WHICH":
-                return which(self.question, sent)
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
             elif self.tag == "HOW":
-                return how(self.question, sent)
-            elif self.tag == "HOWMANY":
-                return howmany(self.question, sent)
-            elif self.tag == "HOWMUCH":
-                return howmuch(self.question, sent)
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
+            elif self.tag == "HOW MANY":
+                ans = howmany(self.question, sent)
+            elif self.tag == "HOW MUCH":
+                ans = howmuch(self.question, sent)
             elif self.tag == "WHY":
-                return why(self.question, sent)
+                ans = answer_wh.why(self.raw_question, sent)
+            elif self.tag == "TOOSHORT":
+                ans = "Can't identify question"
             else:
-                return sent
+                ans = answer_wh.get_none(self.raw_question, self.tag, sent)
 
-''' test script
-text = "Early life and education\nDonovan was born on March 4, 1982, in Ontario, California, to Donna Kenney-Cash, a special education teacher, and Tim Donovan, a semi-professional ice hockey player originally from Canada, which makes Donovan a Canadian citizen by descent. His mother raised him and his siblings in Redlands, California.\nWhen Donovan was six, his mother allowed him to join an organized league, and he scored seven goals in his first game. Donovan was a member of Cal Heat – a club based in nearby Rancho Cucamonga under coach Clint Greenwood. In 1997, he was accepted into U.S. Youth Soccer's Olympic Development Program. He attended Redlands East Valley High School when not engaged in soccer activities elsewhere. In 1999, Donovan attended the IMG Academy in Bradenton, Florida, part of U.S. Soccer's training program."
-sent_text = nltk.sent_tokenize(text)
-token = []
-for sentence in sent_text:
-    tokenized_text = nltk.word_tokenize(sentence)
-    token.append(tokenized_text)
-question = "Who was born in California".split()
-A = Answer(token, question)
-'''
+            if len(ans) == 0:
+                return sent
+            else:
+                return ans
 
 def main(argv):
     articleLoc = argv[1]
@@ -198,8 +194,15 @@ def main(argv):
     question_list = question.split("\n")
     A = Answer(sent_text, token_list)
     for ques in question_list:
+        if len(ques) != 0 and ques[-1] in string.punctuation:
+            ques = ques[:-1]
         A.setQuestion(ques)
-        print (A.get_answer())
+        res = A.get_answer()
+        if len(res) != 0 and res[-1] in string.punctuation:
+            res = res[:-1] + '.'
+        else:
+            res += '.'
+        print(res[0].upper() + res[1:])
 
     art_doc.close()
     ques_doc.close()

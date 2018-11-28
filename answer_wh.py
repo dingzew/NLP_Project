@@ -16,10 +16,13 @@ from process import *
 
 
 lemma = WordNetLemmatizer()
-verb_list = ['do','will','can','would','could','be']
+verb_list = ['do','will','can','would','could', 'be']
+noun_tags = ["NN","NNS"]
+verb_tags = ["VB","VBZ","VBP","VBD","VBN","VBG"]
+adj_tags = ["JJ","JJR","JJS","RB","RBS","RBR"]
 
 def get_because(ans_list):
-    because_list = ["because", "because of", "since", "due to", "thanks to", "through"]
+    because_list = ["because", "because of", "since", "due to", "thanks to", "to"]
     result_list = ["as a result", "resulting", "so"]
     for index in range(len(ans_list)):
         word = ans_list[index]
@@ -34,21 +37,21 @@ def get_end(ans_list, front):
         for index in range(len(ans_list)):
             word = ans_list[index]
             if word in string.punctuation:
-                return word
+                return index
         return len(ans_list)
     else: # go backwards
         for index in range(len(ans_list)-1,-1,-1):
             word = ans_list[index]
             if word in string.punctuation:
-                return word
+                return index
         return -1
 
 def why_helper(question, target):
     # ans_tree = generateTree(target.lower())
     ans_list = nltk.word_tokenize(target)
     (because_word, start, getAfter) = get_because(ans_list)
-    len_be = len(because.split())
-    if index == -1:
+    len_be = len(because_word.split())
+    if start == -1:
         return target # return default answer
     if getAfter:
         end = get_end(ans_list[start:], True) + start
@@ -117,66 +120,180 @@ def get_nvtags(ptree, tag_list):
         result.append(maxStrNP)
     return result
 
+def get_vptags(ptree):
+    result = []
+    for tag in ["VB", "VBZ", "VBD"]:
+        nptree = get_subtree(ptree, tag)
+        if nptree != None:
+            np_sub = get_list_of_tags(nptree, tag)
+            maxStrNP = ""
+            for s in np_sub:
+                if len(s) > len(maxStrNP):
+                    maxStrNP = s
+            result.append(maxStrNP)
+    return result
+
 def reformulate_what(question):
     ptree = generateTree(question)
-    if question.startswith("what happened"):
-        return ("PP", question[question.find("what happened")+len("what happened"):])
-
     whnp = get_list_of_tags(ptree, "WHNP")
-
+    if len(whnp) == 0:
+        whnp = question.split()[0]
     rest = question[question.find(whnp[0])+len(whnp[0]):]
     sentence = get_list_of_tags(ptree, "S")
+
     if len(sentence) != 0:
         # is object
-        return ("OBJ", sentence[0])
+        return ("OBJ", [sentence[0]])
     # is subject
     to_classify = rest.split()[0]
-    tag = get_tag(ptree, to_classify)
-    if len(tag) > 0:
-        if tag[0] == "VBD" or tag[0] == "VBP":
-            if lemma.lemmatize(to_classify,'v') not in verb_list:
-                # is object
-                return ("OBJ", sentence[0])
-            # get NP + VP pattern
-            subtree = get_subtree(ptree, "VP")
-            pp = get_list_of_tags(subtree, "PP")
-            if len(pp) != 0:
-                return ("NVP", get_nvtags(ptree, ["NP","VP","PP"]))
-            else:
-                return ("NV", get_nvtags(ptree, ["NP","VP"]))
+    
+    if get_subtree(ptree, "VP") != None:
+    # if lemma.lemmatize(to_classify,'v') != "be":
+        if lemma.lemmatize(to_classify,'v') not in verb_list:
+            # is object
+            return ("OBJ", [" ".join(rest.split()[1:])])
+        # get NP + VP pattern
+        subtree = get_subtree(ptree, "VP")
+        pp = get_list_of_tags(subtree, "PP")
+        # if len(pp) != 0:
+            # return ("NV", get_nvtags(ptree, ["NP"]) + get_vptags(subtree) + get_nvtags(subtree, ["PP"]))
+        # else:
+        return ("NV", get_nvtags(ptree, ["NP","VP"]))
+    else:
+        return ("NN", [" ".join(rest.split()[1:])])
 
-        if tag[0] == "VBZ":
-            nptree = get_nvtags(ptree, ["NP"])
-            return ("VBZ", nptree)
-        else:
-            print(tag)
     return None
 
 def reformulate_how(question):
     ptree = generateTree(question)
     
     whnp = get_list_of_tags(ptree, "WHADVP")
+    if len(whnp) == 0:
+        whnp = question.split()[0]
     rest = question[question.find(whnp[0])+len(whnp[0]):]
     sentence = get_list_of_tags(ptree, "S")
     if len(sentence) != 0:
         # is object
-        return ("OBJ", sentence[0])
+        return ("OBJ", get_nvtags(ptree, ["NP","VP"]))
     # is subject
-    return ("NV", get_nvtags(ptree, ["NP","VP"]))
+    return ("VB", get_nvtags(ptree, ["NP","VP"]))
 
 def reformulate_which(question):
     ptree = generateTree(question)
     whnp = get_list_of_tags(ptree, "WHNP")
-    question = question.replace(whnp, "what")
+    question = question.replace(" ".join(whnp), "what")
     return reformulate_what(question)
 
-def get_answer(keyword, tag, answer):
-    for ans in keyword, 
+def get_what_answer(question, qtag, answer):
+    question = question.lower()
+    answer = answer.lower()
 
-target = [("How did the supporters of Henry Clay feel about Fillmore in 1848?", "HOW"),
-          ("What did Taylor and Fillmore disagree upon", "WHAT"),
-          ("What do river otters eat", "WHAT"),
-          ("What is the primary item in an otter's diet", "WHAT")]
-for sent in target:
-    res = reformulate(sent[0], sent[1])
-    print(res)
+    # special case
+    if question.startswith("what happened"):
+        check = question.split()
+        rest = " ".join(check[2:]) 
+        if rest in answer:
+            res = answer[:answer.find(rest)]
+            if (len(res) > 1):
+                return res.strip()
+            else:
+                return answer[answer.find(rest)+len(rest):].strip()
+        else:
+            return answer
+
+    ptree = generateTree(question)
+    if qtag == "HOW":
+        whnp = get_list_of_tags(ptree, "WHADVP")
+        if len(whnp) == 0:
+            whnp = get_list_of_tags(ptree, "WHADJP")
+    else:
+        whnp = get_list_of_tags(ptree, "WHNP")
+    if len(whnp) == 0:
+        whnp = question.split()[0]
+    rest = question[question.find(whnp[0])+len(whnp[0]):]
+    ans_list = answer.split()
+    check = question.split()
+    head = rest.split()
+
+    if "say" in question and "that" in answer:
+        return answer[answer.find("that") + 4:].strip()
+    (tag, keyword) = reformulate(question, qtag)
+
+    # check be + NP
+    if tag == "NN" or tag == "VB" or tag == "OBJ":
+        verb = check[check.index(head[0]) - 1]
+        if rest in answer:
+            guess = ans_list[ans_list.index(verb) - 1]
+            if guess == verb or lemma.lemmatize(guess, "v") == lemma.lemmatize(verb, "v"):
+                return answer[:answer.find(rest)-len(verb)-1].strip()
+            if ans_list.index(verb) + 1 < len(ans_list):
+                guess = ans_list[ans_list.index(verb) + 1]
+                if guess == verb or lemma.lemmatize(guess, "v") == lemma.lemmatize(verb, "v"):
+                    return answer[answer.find(rest)+len(guess)+1:].strip()
+        if keyword[0] in answer:
+            res = answer[answer.find(keyword[0])+len(keyword[0]):].split()
+            res = [i for i in res if i not in string.punctuation]
+            return " ".join(res)
+
+    # check be/have/do/can + NP, VP
+    if tag == "NV":
+        # get vp keyword
+        if len(keyword) == 2:
+            noun = keyword[0]
+            noun_start = noun.split()[0]
+            noun_end = noun.split()[-1]
+            verb = keyword[1]
+            if noun in answer:
+                if noun_start in ans_list:
+                    guess = ans_list[ans_list.index(noun_start) - 1]
+                    if guess in verb or lemma.lemmatize(guess, "v") == lemma.lemmatize(verb, "v"):
+                        return answer[:answer.find(noun_start)-len(verb)-1].strip()
+                if noun_end in ans_list and ans_list.index(noun_end) + 1 < len(ans_list):
+                    guess = ans_list[ans_list.index(noun_end) + 1]
+                    if guess in verb or lemma.lemmatize(guess, "v") == lemma.lemmatize(verb, "v"):
+                        return answer[answer.find(noun_end)+len(guess)+1:].strip()
+            if verb in answer:
+                if answer.index(verb) + 1 < len(answer):
+                    guess = answer[answer.index(verb)+len(verb):]
+                    if guess.split()[0] in ["ed", "es"] or len(guess.split()[0]) <= 1:
+                        return (" ".join(guess.split()[1:])).strip()
+
+        if len(keyword) == 3:
+            noun = keyword[0]
+            noun_start = noun.split()[0]
+            noun_end = noun.split()[-1]
+            verb = keyword[1]
+            pp = keyword[2]
+            pp_start = pp.split()[0]
+            if pp_start in ans_list:
+                res = ans_list[:ans_list.index(pp)]
+                if noun_end in res:
+                    if res.index(noun_end) + 1 < len(res):
+                        guess = res[res.index(noun_end) + 1]
+                        if guess == verb or lemma.lemmatize(guess, "v") == lemma.lemmatize(verb, "v"):
+                            res_str = " ".join(res)
+                            return res_str[res_str.find(noun_end)+len(guess)+1:].strip()
+    return answer
+
+def get_none(question, qtag, answer):
+    if question[-1] in string.punctuation:
+        question = question[:-1]
+    whword_list = ["what", "who", "where", "how", "why", "what", "which", "how much", "how many"]
+    ans_list = answer.split()
+    for word in whword_list:
+        if word in question:
+            front = question[:question.find(word)].strip()
+
+            front_list = front.split()
+            check_len = min(2, len(front_list))
+            if check_len == 0: return answer
+            check = " ".join(front_list[-check_len:])
+            if check in answer:
+                return answer[answer.find(check) + len(check):].strip()        
+    return answer
+
+
+def get_obj(sentence):
+    tree = generateTree(sentence)
+    np_tag = get_list_of_tags(tree, "NP")
+    return np_tag[0]

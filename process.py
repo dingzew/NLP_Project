@@ -48,6 +48,16 @@ def who(question, sentence):
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'PERSON']
     candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    result = []
+    for ind_list in candidates:
+        temp = []
+        for i in ind_list:
+            if tokens[i].lower() not in question:
+                temp.append(i)
+        if temp != []: 
+            result.append(temp)
+    candidates = result
+
     index = get_best(candidates, question, tokens)
     if index != -1:
         return ' '.join([tags[i][0] for i in candidates[index]])
@@ -60,6 +70,15 @@ def when(question, sentence):
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'DATE' or tag[1] == 'TIME']
     candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    result = []
+    for ind_list in candidates:
+        temp = []
+        for i in ind_list:
+            if tokens[i].lower() not in question:
+                temp.append(i)
+        if temp != []: 
+            result.append(temp)
+    candidates = result
     index = get_best(candidates, question, tokens)
     if index != -1:
         return ' '.join([tags[i][0] for i in candidates[index]])
@@ -72,6 +91,15 @@ def where(question, sentence):
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'LOCATION']
     candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    result = []
+    for ind_list in candidates:
+        temp = []
+        for i in ind_list:
+            if tokens[i].lower() not in question:
+                temp.append(i)
+        if temp != []: 
+            result.append(temp)
+    candidates = result
     index = get_best(candidates, question, tokens)
     if index != -1:
         return ' '.join([tags[i][0] for i in candidates[index]])
@@ -117,9 +145,8 @@ def yesno(question, sentence):
 def getTag(line):
     words = line.lower().split()
     if len(words) < 2:
-        print("Could you be more specific?")
-        return
-    if words[0] == "who":# or (words[0] == "to" and words[1] == "whom"):
+        return "TOOSHORT"
+    if words[0] == "who" or (words[0] == "to" and words[1] == "whom"):
         return "WHO"
     elif words[0] == "when":
         return "WHEN"
@@ -130,9 +157,9 @@ def getTag(line):
     elif words[0] == "which":
         return "WHICH"
     elif words[0] == "how" and words[1] == "many":
-        return "HOWMANY"
+        return "HOW MANY"
     elif words[0] == "how" and words[1] == "much":
-        return "HOWMUCH"
+        return "HOW MUCH"
     elif words[0] == "how":
         return "HOW"
     elif words[0] == "why":
@@ -140,5 +167,6 @@ def getTag(line):
     elif lemma.lemmatize(words[0],'v') in yesno_list:
         return "YESNO"
     else:
+        
         return "NONE"
 
