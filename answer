@@ -1,0 +1,211 @@
+#!/home/anaconda3.6/bin/python3.6
+
+import nltk
+from nltk.tree import Tree
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from nltk.corpus import wordnet
+import string
+import os
+import re
+import sys
+import math
+
+from nltk.stem.wordnet import WordNetLemmatizer
+import answer_yesno
+import answer_wh
+from process import *
+from tree_file import *
+# nltk.download('punkt')
+# nltk.download('stopwords')
+lemma = WordNetLemmatizer()
+VERB = ["VB","VBZ","VBP","VBD","VBN","VBG"]
+
+class Answer(object):
+    def __init__(self, orig, sentences):
+        self.original = orig
+        self.length = 0
+        self.sentences = self.preprocessSentence(sentences) # tokenized
+    
+    def setQuestion(self, question):
+        self.raw_question = question
+        self.tag = getTag(question)
+        question = re.compile('\w+').findall(question.lower())
+        self.question = [lemma.lemmatize(w) for w in question if w not in string.punctuation and w not in stopwords.words('english')]
+        self.questionSynset = self.preprocessQuestion()
+        self.questionDict = self.compQues(self.question)
+        self.sentDict = self.calculToken(self.sentences, self.questionDict)
+        self.vectorList = self.similarity(self.question)
+
+    def preprocessSentence(self, sentList):
+        for index,words in enumerate(sentList):
+            sentList[index] = [lemma.lemmatize(w) for w in words if w not in string.punctuation and w not in stopwords.words('english')]
+        return sentList
+
+    def preprocessQuestion(self):
+        questionSynset = []
+        for word in self.question:
+            questionSynset.append(wordnet.synsets(word))
+        return questionSynset
+
+    # take in a sentence of words
+    def calculToken(self, sentList, questionDict):
+        questionSet = questionDict.keys()
+        vocabulary = set()
+        sentDictList = []
+
+        for words in sentList:
+            d = dict()
+            for word in words:
+                if word in questionDict:
+                    d[word] = d.get(word, 0) + 1
+            for word in d:
+                d[word] = d[word] / math.sqrt(len(words))
+            sentDictList.append(d)
+        return sentDictList
+
+    def compQues(self, questionList):
+        d = dict()
+        for word in questionList:
+            d[word] = d.get(word, 0) + 1
+        return d
+
+    def termFreq(self, sentDict, word):
+        return sentDict.get(word, 0)
+
+    def inverseFreq(self, word):
+        count = 0
+        for sent in self.sentDict:
+            if word in sent:
+                count += 1
+        return math.log(len(self.sentences) / (count + 1))
+
+    def similarity(self, question):
+#        tokens = nltk.word_tokenize(self.raw_question)
+#        path_to_model = "stanford-ner/classifiers/english.muc.7class.distsim.crf.ser.gz"
+#        path_to_jar = "stanford-ner/stanford-ner.jar"
+#        st = StanfordNERTagger(path_to_model, path_to_jar)
+#        question = st.tag(tokens)
+#
+        vectorList = []
+        for sent in self.sentDict:
+            vector = []
+            for word in self.question:
+                tfidf = self.termFreq(sent, word) * self.inverseFreq(word)
+                vector.append(tfidf)
+            vectorList.append(vector)
+        return vectorList
+
+    def getSentence(self):
+        score = []
+        for j in range(len(self.vectorList)):
+            vector = self.vectorList[j]
+            curr_sum = sum([i for i in vector])
+            score.append((curr_sum, j))
+        score.sort(key = lambda x : x[0], reverse=True)
+        j = 0
+        while j < len(self.sentences):
+            res = []
+            parsed_ques = generateTree(self.original[score[j][1]])
+            for tag in VERB:
+                res += get_phrases(parsed_ques, tag)
+            if len(res) > 0:
+                break
+            j += 1
+        return score[j][1]
+        # get the highest ranked sentences
+
+    def answer_yesno(self):
+        target_index = self.getSentence()
+        target = self.original[target_index]
+        answer = answer_yesno.get_ans_wrapper(self.raw_question, self.question, target)
+        if answer:
+            return "Yes."
+        else:
+            return "No."
+
+    def answer_wh(self):
+        target_index = self.getSentence()
+        target = self.original[target_index]
+        return target
+
+    def get_answer(self):
+        if self.tag == "YESNO":
+            return self.answer_yesno()
+        else:
+            sent = self.answer_wh()
+            if self.tag == "WHO":
+                ans = who(self.question, sent)
+            elif self.tag == "WHERE":
+                ans = where(self.question, sent)
+            elif self.tag == "WHEN":
+                ans = when(self.question, sent)
+            elif self.tag == "WHAT":
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
+            elif self.tag == "WHICH":
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
+            elif self.tag == "HOW":
+                ans = answer_wh.get_what_answer(self.raw_question, self.tag, sent)
+            elif self.tag == "HOW MANY":
+                ans = howmany(self.question, sent)
+            elif self.tag == "HOW MUCH":
+                ans = howmuch(self.question, sent)
+            elif self.tag == "WHY":
+                ans = answer_wh.why(self.raw_question, sent)
+            elif self.tag == "TOOSHORT":
+                ans = "Can't identify question"
+            else:
+                ans = answer_wh.get_none(self.raw_question, self.tag, sent)
+
+            if len(ans) == 0:
+                return sent
+            else:
+                return ans
+
+def main(argv):
+    articleLoc = argv[1]
+    questionLoc = argv[2]
+    with open (articleLoc, "r", encoding="utf-8") as art_doc:
+        article = art_doc.read()
+        # article = art_doc.decode('utf-8')
+        article = article.split('\n')[1:]
+        article = " ".join(article)
+        article = article.encode('ascii', errors='ignore') 
+        article = article.decode("ascii")
+
+    sent_text = nltk.sent_tokenize(article)
+    sent_text = [s for s in sent_text]
+    new_sent_text = []
+    token_list = []
+    for sentence in sent_text:
+        tokenized_text = nltk.word_tokenize(sentence)
+
+        res = [w.lower() for w in tokenized_text]
+        if len(res) < 60:
+            new_sent_text.append(sentence)
+            token_list.append(res)
+    sent_text = new_sent_text
+
+    with open (questionLoc, "r", encoding="utf-8") as ques_doc:
+        question = ques_doc.read()
+        question = question.encode('ascii', errors='ignore')
+        question = question.decode("ascii")
+
+    question_list = question.split("\n")
+    A = Answer(sent_text, token_list)
+    for ques in question_list:
+        if len(ques) != 0 and ques[-1] in string.punctuation:
+            ques = ques[:-1]
+        A.setQuestion(ques)
+        res = A.get_answer()
+        if len(res) != 0 and res[-1] in string.punctuation:
+            res = res[:-1] + '.'
+        else:
+            res += '.'
+        print(res[0].upper() + res[1:])
+
+    art_doc.close()
+    ques_doc.close()
+
+if __name__ == "__main__":
+    main(sys.argv)
