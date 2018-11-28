@@ -8,7 +8,7 @@ import more_itertools as mit
 
 lemma = WordNetLemmatizer()
 
-yesno_list = ['be','have','do','will','can','would','could','should','shall','may','might','did','does',"didn't","doesn't",'was','is','am','are','were']
+yesno_list = ['be','have', 'has', 'had', 'do','will','can','would','could','should','shall','may','might','did','does',"didn't","doesn't",'was','is','am','are','were']
 
 def tokenizeDoc(cur_doc):
     return re.findall('\\w+', cur_doc)
