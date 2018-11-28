@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/anaconda3.6/bin/python3.6
 
 import nltk
 from nltk.tree import Tree
@@ -118,7 +118,8 @@ class Answer(object):
     def answer_yesno(self):
         target_index = self.getSentence()
         target = self.original[target_index]
-        answer = answer_yesno.get_ans_wrapper(self.raw_question, self.question, target)
+        sent_list = self.sentences[target_index]
+        answer = answer_yesno.get_ans_wrapper(self.question, self.raw_question, target, sent_list)
         if answer:
             return "Yes."
         else:

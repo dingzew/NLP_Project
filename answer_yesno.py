@@ -114,7 +114,6 @@ def get_yesno_answer(question_list, question, target, sent_list):
 #    return True
 
 def get_ans_wrapper(original, question, target, sent_list):
-    print(target)
     ans = get_yesno_answer(original, question, target, sent_list)
     return ans
 

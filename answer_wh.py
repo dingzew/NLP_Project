@@ -172,6 +172,8 @@ def reformulate_how(question):
         whnp = question.split()[0]
     rest = question[question.find(whnp[0])+len(whnp[0]):]
     sentence = get_list_of_tags(ptree, "S")
+    if get_subtree(ptree, "VP") == None:
+        return ("NN", [" ".join(rest.split()[1:])])
     if len(sentence) != 0:
         # is object
         return ("OBJ", get_nvtags(ptree, ["NP","VP"]))
