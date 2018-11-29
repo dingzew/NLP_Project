@@ -52,7 +52,7 @@ def why_helper(question, target):
     (because_word, start, getAfter) = get_because(ans_list)
     len_be = len(because_word.split())
     if start == -1:
-        return target # return default answer
+        return (target, "") # return default answer
     if getAfter:
         end = get_end(ans_list[start:], True) + start
         return (ans_list[start+len_be],ans_list[end])
@@ -62,6 +62,8 @@ def why_helper(question, target):
 
 def why(question, target):
     (start, end) = why_helper(question, target)
+    if end == "":
+        return start
     answer = target[target.find(start):target.find(end)+len(end)]
     return answer[0].upper() + answer[1:]
 
