@@ -4,7 +4,6 @@ from nltk.tag.stanford import StanfordNERTagger
 from nltk.tag import StanfordNERTagger
 from stanford_utils import *
 from nltk.stem.wordnet import WordNetLemmatizer
-import more_itertools as mit
 
 lemma = WordNetLemmatizer()
 
@@ -42,12 +41,27 @@ def get_best(candidates, question, tokens):
             index = i
     return index
 
+def get_candidates(lst):
+    ret = []
+    cur = []
+    prev = -1
+    for id,num in enumerate(lst):
+        if id > 0 and num != prev+1:
+            ret.append(cur)
+            cur = [num]
+        else:
+            cur.append(num)
+        prev = num
+    if len(cur) > 0:
+        ret.append(cur)
+    return ret
+
 def who(question, sentence):
     tokens = tokenizeWord(sentence)
     tokens = [lemma.lemmatize(w) for w in tokens]
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'PERSON']
-    candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    candidates = get_candidates(answer)
     result = []
     for ind_list in candidates:
         temp = []
@@ -69,7 +83,7 @@ def when(question, sentence):
     tokens = [lemma.lemmatize(w) for w in tokens]
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'DATE' or tag[1] == 'TIME']
-    candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    candidates = get_candidates(answer)
     result = []
     for ind_list in candidates:
         temp = []
@@ -90,7 +104,7 @@ def where(question, sentence):
     tokens = [lemma.lemmatize(w) for w in tokens]
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'LOCATION']
-    candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    candidates = get_candidates(answer)
     result = []
     for ind_list in candidates:
         temp = []
@@ -127,7 +141,7 @@ def howmuch(question, sentence):
     tokens = [lemma.lemmatize(w) for w in tokens]
     tags = tagSent(sentence)
     answer = [i for i,tag in enumerate(tags) if tag[1] == 'MONEY']
-    candidates = [list(group) for group in mit.consecutive_groups(answer)]
+    candidates = get_candidates(answer)
     index = get_best(candidates, question, tokens)
     if index != -1:
         return ' '.join([tags[i][0] for i in candidates[index]])
