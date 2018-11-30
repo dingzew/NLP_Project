@@ -1,3 +1,4 @@
+#!/home/anaconda3.6/bin/python3.6
 from random import shuffle, choice
 from stanford_utils import new_NERtagger
 import sys
@@ -54,7 +55,7 @@ if __name__ == '__main__':
                                     orgs.add(x[0].lower())
                 except Exception as e:
                     pass
-    pronouns = ["i", "you", "he", "she", "it"]
+    pronouns = ["i", "you", "he", "she", "it", "they"]
     for pron in pronouns:
         persons.add(pron)
 

@@ -1,5 +1,4 @@
 #!/home/anaconda3.6/bin/python3.6
-
 from random import shuffle, choice
 from stanford_utils import new_NERtagger
 import sys
@@ -43,17 +42,20 @@ if __name__ == '__main__':
         for line in inp:
             sentences = nltk.sent_tokenize(line)
             for sent in sentences:
-                ner_tags = tagger.tag(nltk.word_tokenize(sent))
-                ner_tree = tree_file.stanfordNE2tree(ner_tags)
-                for ele in ner_tree:
-                    if type(ele) == nltk.Tree:
-                        if ele.label() == "PERSON":
-                            for x in ele.leaves():
-                                persons.add(x[0].lower())
-                        elif ele.label() == "ORGANIZATION":
-                            for x in ele.leaves():
-                                orgs.add(x[0].lower())
-    pronouns = ["i", "you", "he", "she", "it"]
+                try:
+                    ner_tags = tagger.tag(nltk.word_tokenize(sent))
+                    ner_tree = tree_file.stanfordNE2tree(ner_tags)
+                    for ele in ner_tree:
+                        if type(ele) == nltk.Tree:
+                            if ele.label() == "PERSON":
+                                for x in ele.leaves():
+                                    persons.add(x[0].lower())
+                            elif ele.label() == "ORGANIZATION":
+                                for x in ele.leaves():
+                                    orgs.add(x[0].lower())
+                except Exception as e:
+                    pass
+    pronouns = ["i", "you", "he", "she", "it", "they"]
     for pron in pronouns:
         persons.add(pron)
 
