@@ -3,8 +3,9 @@ from stanford_utils import new_NERtagger
 import sys
 import json
 import nltk
-import question1
+import question
 import tree_file
+from tree_file import Trie
 import NER_file
 
 tagger = new_NERtagger()
@@ -13,21 +14,18 @@ def append_if_not_None(arr, ele):
     if ele is not None:
         arr.append(ele)
 
-def ask(line):
+def ask(line, persons, orgs):
     line = line.replace(",", " ,")
     line = line.replace(".", " .")
     ner_tags = tagger.tag(line.split())
-    raw_tree = nltk.ParentedTree.convert(tree_file.generateTree(line))
+    raw_tree = tree_file.generateTree(line)
     ner_tree = tree_file.stanfordNE2tree(ner_tags)
     qs = []
-    print(line)
-    print(qs)
-    append_if_not_None(qs, question1.askHowMany(line, ner_tags))
+    append_if_not_None(qs, question.askBinary(line, raw_tree))
+    append_if_not_None(qs, question.askWhen(line, raw_tree, ner_tree))
+    append_if_not_None(qs, question.askSubject(line, raw_tree, ner_tree, persons, orgs))
+    append_if_not_None(qs, question.askWhere(line, raw_tree, ner_tree))
     '''
-    append_if_not_None(qs, question1.askWhen(line, raw_tree, ner_tree))
-    append_if_not_None(qs, question1.askWho(line, raw_tree, ner_tree))
-    append_if_not_None(qs, question1.askWhere(line, raw_tree, ner_tree))
-    append_if_not_None(qs, question1.askWhere(tree))
     append_if_not_None(qs, question1.askDoWhat(tree))
     '''
     return qs
@@ -36,22 +34,50 @@ if __name__ == '__main__':
     _, input_file, N = sys.argv
     N = int(N)
     total = []
-    with open(input_file) as inp:
+    persons = Trie()
+    orgs = Trie()
+
+    with open(input_file, encoding="utf-8") as inp:
+        for line in inp:
+            sentences = nltk.sent_tokenize(line)
+            for sent in sentences:
+                ner_tags = tagger.tag(nltk.word_tokenize(sent))
+                ner_tree = tree_file.stanfordNE2tree(ner_tags)
+                for ele in ner_tree:
+                    if type(ele) == nltk.Tree:
+                        if ele.label() == "PERSON":
+                            for x in ele.leaves():
+                                persons.add(x[0].lower())
+                        elif ele.label() == "ORGANIZATION":
+                            for x in ele.leaves():
+                                orgs.add(x[0].lower())
+    pronouns = ["i", "you", "he", "she", "it"]
+    for pron in pronouns:
+        persons.add(pron)
+
+    with open(input_file, encoding="utf-8") as inp:
         data = list(inp)
         shuffle(data)
         for line in data:
             sentences = nltk.sent_tokenize(line)
             for sent in sentences:
-                if "–" in sent or ":" in sent or "-" in sent or "(" in sent or ")" in sent:
+                if "–" in sent or ":" in sent or "-" in sent or "(" in sent or ")" in sent or "^" in sent or "'m" in sent or "'ve" in sent or "'d" in sent or "'s" in sent or "as of" in sent.lower():
                     continue
                 if sent and sent[-1] == '.':
-                    qs = ask(sent)
-                    total += qs
+                    qs = ask(sent, persons, orgs)
                     if qs:
-                        N -= 1
+                        for q in qs:
+                            total.append(q)
+                            print(q)
+                            N -= 1
+                            if N == 0:
+                                break
                         if N == 0:
                             break
             if N == 0: 
                 break
-    for q in total:
-        print(q)
+    if total: 
+        while N > 0:
+            print(total[N % len(total)])
+            N -= 1
+

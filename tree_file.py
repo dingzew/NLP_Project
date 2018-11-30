@@ -1,12 +1,46 @@
 from stanford_utils import *
 import NER_file
-from nltk import Tree
+from nltk import Tree, ParentedTree
 from nltk import pos_tag
 from nltk.chunk import conlltags2tree
 from nltk.stem.wordnet import WordNetLemmatizer
 
+class Trie:
+    """ 
+    This Trie implementation is partially borrowed and modified 
+    from my own implementation on Leetcode question 208
+    """
+
+    def __init__(self):
+        self.children = {}
+        self.is_end = False
+
+    def add(self, word):
+        cur = self
+        for ch in word:
+            if ch not in cur.children:
+                cur.children[ch] = Trie()
+            cur = cur.children[ch]
+        cur.is_end = True 
+        
+    def contains(self, word):
+        cur = self
+        for ch in word.lower():
+            if ch in cur.children:
+                cur = cur.children[ch]
+            else:
+                return False
+        return cur.is_end 
+
+    def __repr__(self):
+        return str(self.children) + "T" if self.is_end else ""
+
+    def __contains__(self, word):
+        return self.contains(word)
+
 """ 
 The section of code below is copied from alvas' answer at https://stackoverflow.com/questions/30664677/extract-list-of-persons-and-organizations-using-stanford-ner-tagger-in-nltk 
+This section code will convert tagged sentence to an nltk tree with ner tags
 """
 def stanfordNE2BIO(tagged_sent):
     bio_tagged_sent = []
@@ -46,7 +80,7 @@ def generateTree(sentence):
     tree = None
     for sub in t:
         tree = sub
-    return tree
+    return ParentedTree.convert(tree)
 
 
 def get_phrases(tree, pattern, reversed=False, sort=False):
@@ -63,8 +97,13 @@ def get_phrases(tree, pattern, reversed=False, sort=False):
     return phrases
 
 
-def merge_raw_tree(tree):
-    return " ".join(tree.leaves())
+def merge_raw_tree(tree, lower=False):
+    alist = list(tree.leaves())
+    if not alist:
+        return ""
+    if lower and is_pron(alist[0]):
+        alist[0] = alist[0].lower()
+    return " ".join(alist)
 
 def merge_ner_tree(tree):
     return " ".join(l[0] for l in tree.leaves())
@@ -86,7 +125,7 @@ def get_tokens(sentence):
     return tagged
 
 def testTime(tree):
-    if len(get_phrases(tree, "VBD")) != 0:
+    if len(get_phrases(tree, "VBD")) != 0 or len(get_phrases(tree, "VBN")) != 0:
         return "past"
     if len(get_phrases(tree, "VBP")) != 0:
         return "single"
@@ -118,10 +157,10 @@ def is_have(word):
     return word.lower() in {"have", "has", "had"}
 
 def is_pron(word):
-    return word.lower() in {"he", "she", "it", "I", "him", "her", "his", "its", "my", "your", "yours", "mine", "hers"}
+    return word.lower() in {"he", "she", "it", "i", "him", "her", "his", "its", "my", "your", "yours", "mine", "hers"}
 
 def is_subj_pron(word):
-    return word.lower() in {"he", "she", "it", "I"}
+    return word.lower() in {"he", "she", "it", "i"}
 
 def get_first_verb(tree):
     first_verb = None
@@ -131,7 +170,7 @@ def get_first_verb(tree):
             break
     return first_verb
 
-def find_subject_action(raw_tree, ner_tree):
+def find_subject_action(raw_tree):
     subj, action = None, None
     for i in raw_tree.subtrees():
         j = i.right_sibling()
@@ -140,12 +179,15 @@ def find_subject_action(raw_tree, ner_tree):
         if not j:
             continue
         if (i.label().startswith("N") or i.label() == "PRP") and j.label().startswith("V"):
-            subj = i.leaves()[0]
+            subj = i
             action = j
             break
+    if not subj or subj.leaves()[0] == "I":
+        return None, None
+    return subj, action
 
+    '''
     if not subj or not action: return (None, None)
-
     for ner in ner_tree:
         if type(ner) == Tree:
             for leaf in ner.leaves():
@@ -153,31 +195,30 @@ def find_subject_action(raw_tree, ner_tree):
                     return ner, action
         elif is_subj_pron(ner[0]) and subj == ner[0]:
             return ner, action
+    '''
     return (None, None)
 
-def get_qbody(tree):
-    vp = get_phrases(tree, "VP")
-    if vp: vp = vp[0]
-    else: return None
-
-    np = get_phrases(tree, "NP")
-    if np: np = np[0]
-    else: return None
-
-    if is_pron(np.leaves()[0]): return None
+def get_qbody(raw_tree):
+    np, vp = find_subject_action(raw_tree)
+    if np is None or vp is None or np.leaves()[0] == "I":
+        return None
+    if not vp:
+        return None
 
     tense = testTime(vp)
-    if not vp: return ''
-
     first_verb = get_first_verb(vp)
-    qbody = merge_raw_tree(np) + " " + vp2base(vp)
+
+    if vp[0].label() == "MD":
+        qbody = vp[0][0] + " " + merge_raw_tree(np, lower=True) + " " + vp2base(vp).replace(vp[0][0], "").strip()
+        return qbody
+    elif is_be(first_verb):
+        qbody = first_verb + " " + merge_raw_tree(np, lower=True) + " " + vp2base(vp).replace(first_verb, "").strip()
+        return qbody
+
+    qbody = merge_raw_tree(np, lower=True) + " " + vp2base(vp)
+
     if tense == "past":
-        if is_be(first_verb):
-            if testPlural(np):
-                qbody = "were " + qbody
-            else:
-                qbody = "was " + qbody
-        elif is_have(first_verb):
+        if is_have(first_verb):
             return None
         else:
             qbody = "did " + qbody
@@ -199,11 +240,6 @@ def vp2base(vp):
                 ask_be = True
                 continue
             words.append(WordNetLemmatizer().lemmatize(word_pos[0], 'v'))
-        elif word_pos[1].startswith("V") and not is_be(pre_word_pos[0]):
-            if ask_be or is_be(word_pos[0]) or word_pos[1] == "VBG":
-                words.append(word_pos[0])
-            else:
-                words.append(WordNetLemmatizer().lemmatize(word_pos[0], 'v'))
         else:
             words.append(word_pos[0])
         pre_word_pos = word_pos
@@ -223,33 +259,4 @@ def fine_structures(tree):
         if phrase.label() == "NP":
             dic["passive"] = merge(phrase)[0]
     return dic
-
-if __name__ == "__main__":
-    # tree = generateTree("Dingze Wang ate an apple in Carnegie Mellon University")
-    # print(tree)
-    # phrases = get_phrases(tree, "NP")
-    # for phrase in phrases:
-    #     print(merge(phrase))
-    # phrases = get_phrases(tree, "VP")
-    # for phrase in phrases:
-    #     print(merge(phrase))
-    #
-
-    # tree = generateTree("Mary is beaten by David")
-    # print(tree)
-    # phrases = get_phrases(tree, "NP")
-    # for phrase in phrases:
-    #     print(merge(phrase))
-    # phrases = get_phrases(tree, "VP")
-    # for phrase in phrases:
-    #     print(merge(phrase))
-
-    tree = generateTree("Dingze Wang ate an apple in Carnegie Mellon University")
-    print(tree)
-    phrases = get_phrases(tree, "NP")
-    for phrase in phrases:
-        print(merge(phrase))
-    phrases = get_phrases(tree, "VP")
-    for phrase in phrases:
-        print (phrase)
 
