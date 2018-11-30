@@ -156,10 +156,10 @@ def is_have(word):
     return word.lower() in {"have", "has", "had"}
 
 def is_pron(word):
-    return word.lower() in {"he", "she", "it", "i", "him", "her", "his", "its", "my", "your", "yours", "mine", "hers"}
+    return word.lower() in {"he", "she", "it", "i", "they", "him", "her", "his", "its", "theirs", "my", "your", "yours", "mine", "hers", "their"}
 
 def is_subj_pron(word):
-    return word.lower() in {"he", "she", "it", "i"}
+    return word.lower() in {"he", "she", "it", "i", "they"}
 
 def get_first_verb(tree):
     first_verb = None
