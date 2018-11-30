@@ -65,19 +65,22 @@ if __name__ == '__main__':
         for line in data:
             sentences = nltk.sent_tokenize(line)
             for sent in sentences:
-                if "–" in sent or ":" in sent or "-" in sent or "(" in sent or ")" in sent or "^" in sent or "'m" in sent or "'ve" in sent or "'d" in sent or "'s" in sent or "as of" in sent.lower():
-                    continue
-                if sent and sent[-1] == '.':
-                    qs = ask(sent, persons, orgs)
-                    if qs:
-                        for q in qs:
-                            total.append(q)
-                            print(q)
-                            N -= 1
+                try:
+                    if "–" in sent or ":" in sent or "-" in sent or "(" in sent or ")" in sent or "^" in sent or "'m" in sent or "'ve" in sent or "'d" in sent or "'s" in sent or "as of" in sent.lower():
+                        continue
+                    if sent and sent[-1] == '.':
+                        qs = ask(sent, persons, orgs)
+                        if qs:
+                            for q in qs:
+                                total.append(q)
+                                print(q)
+                                N -= 1
+                                if N == 0:
+                                    break
                             if N == 0:
                                 break
-                        if N == 0:
-                            break
+                except Exception as e:
+                    pass
             if N == 0: 
                 break
     if total: 
