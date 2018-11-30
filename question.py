@@ -87,26 +87,6 @@ def askBinary(sent, raw_tree):
     if not question: return None
     return postprocess(question)
 
-def askDoWhatOnCertainTime(sentence):
-    time = NER_file.contains_time(sentence)
-    tree = tree_file.generateTree(sentence)
-    dic = tree_file.fine_structures(tree)
-    pp = tree_file.get_phrases(tree, "PP")
-    flag = False
-    if time != None:
-        timeWord = time[0]
-        for word in tree_file.merge(pp[0])[0].split(" "):
-            if word == timeWord:
-                flag = True
-                break
-        if flag:
-            question = "What did " + dic["main"].lower() + " do " + tree_file.merge(pp[0])[0]
-        else:
-            question = "What did " + dic["main"].lower() + " do in " + timeWord + "?"
-        return question
-    else:
-        return None
-
 def belongs_to(subject, category):
     if not subject:
         return None
@@ -168,19 +148,6 @@ def askWhen(sent, raw_tree, ner_tree):
     if not qbody:
         return None
     return postprocess("When " + tree_file.get_qbody(raw_tree) + "?")
-
-def askDoWhat(tree):
-    dic = tree_file.main_sentence_structure(tree)
-    time = tree_file.testTime(tree)
-    if "main" not in dic:
-        return None
-    if time == "past":
-        question = "What did " + dic["main"] + " do" + "?"
-    elif time == "single":
-        question = "What does " + dic["main"] + " do" + "?"
-    else:
-        question = "What do " + dic["main"] + " do" + "?"
-    return postprocess(question)
 
 def askWhere(sent, raw_tree, ner_tree):
     locations = []

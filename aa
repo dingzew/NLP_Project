@@ -2,5 +2,5 @@
 if [ "$1" == "t" ]; then
 	python3 "ask.py" "data/test.txt" "10"
 else
-	python3 "ask.py" "data/set1/a4.txt" "150"
+	python3 "ask.py" "data/set3/a5.txt" "150"
 fi

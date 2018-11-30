@@ -131,6 +131,11 @@ def testTime(tree):
         return "single"
     if len(get_phrases(tree, "VBZ")) != 0:
         return "single"
+    if len(get_phrases(tree, "VB")) != 0:
+        return "plural"
+    for word in tree.leaves():
+        if word == "will":
+            return "future"
     return "now"
 
 def testPlural(np):
@@ -206,6 +211,7 @@ def get_qbody(raw_tree):
         return None
 
     tense = testTime(vp)
+    plural = testPlural(np)
     first_verb = get_first_verb(vp)
 
     if vp[0].label() == "MD":
@@ -222,8 +228,13 @@ def get_qbody(raw_tree):
             return None
         else:
             qbody = "did " + qbody
-    else:
+    elif tense == "future":
         qbody = "will " + qbody
+    else:
+        if tense == "plural":
+            qbody = "do " + qbody
+        else:
+            qbody = "does " + qbody
     return qbody
 
 def vp2base(vp):
