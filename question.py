@@ -25,7 +25,7 @@ def detokenize(words):
     """
     return "".join([" "+i if not i.startswith("'") and i not in punctuation else i for i in words]).strip()
 
-def askBinary(sent, raw_tree):
+def askBinary(sent, raw_tree, persons, orgs):
 
     tokens = get_tokens(sent)
     if raw_tree[0][0].label() == "PP":
@@ -46,7 +46,7 @@ def askBinary(sent, raw_tree):
     else:
         merged_pp = ""
 
-    question = tree_file.get_qbody(raw_tree)
+    question = tree_file.get_qbody(raw_tree, persons, orgs)
     if not question:
         return None
     question = question + merged_pp + "?"
@@ -117,7 +117,7 @@ def askSubject(sent, raw_tree, ner_tree, persons, orgs):
         question = "What " + tree_file.merge_raw_tree(action) + "?"
         return postprocess(question)
 
-def askWhen(sent, raw_tree, ner_tree):
+def askWhen(sent, raw_tree, ner_tree, persons, orgs):
     dates = []
     for st in ner_tree:
         if type(st) != nltk.Tree:
@@ -149,7 +149,7 @@ def askWhen(sent, raw_tree, ner_tree):
         return None
     return postprocess("When " + tree_file.get_qbody(raw_tree) + "?")
 
-def askWhere(sent, raw_tree, ner_tree):
+def askWhere(sent, raw_tree, ner_tree, persons, orgs):
     locations = []
     dates = []
     for st in ner_tree:

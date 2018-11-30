@@ -21,10 +21,10 @@ def ask(line, persons, orgs):
     raw_tree = tree_file.generateTree(line)
     ner_tree = tree_file.stanfordNE2tree(ner_tags)
     qs = []
-    append_if_not_None(qs, question.askBinary(line, raw_tree))
-    append_if_not_None(qs, question.askWhen(line, raw_tree, ner_tree))
+    append_if_not_None(qs, question.askBinary(line, raw_tree, persons, orgs))
+    append_if_not_None(qs, question.askWhen(line, raw_tree, ner_tree, persons, orgs))
     append_if_not_None(qs, question.askSubject(line, raw_tree, ner_tree, persons, orgs))
-    append_if_not_None(qs, question.askWhere(line, raw_tree, ner_tree))
+    append_if_not_None(qs, question.askWhere(line, raw_tree, ner_tree, persons, orgs))
     '''
     append_if_not_None(qs, question1.askDoWhat(tree))
     '''
@@ -41,16 +41,19 @@ if __name__ == '__main__':
         for line in inp:
             sentences = nltk.sent_tokenize(line)
             for sent in sentences:
-                ner_tags = tagger.tag(nltk.word_tokenize(sent))
-                ner_tree = tree_file.stanfordNE2tree(ner_tags)
-                for ele in ner_tree:
-                    if type(ele) == nltk.Tree:
-                        if ele.label() == "PERSON":
-                            for x in ele.leaves():
-                                persons.add(x[0].lower())
-                        elif ele.label() == "ORGANIZATION":
-                            for x in ele.leaves():
-                                orgs.add(x[0].lower())
+                try:
+                    ner_tags = tagger.tag(nltk.word_tokenize(sent))
+                    ner_tree = tree_file.stanfordNE2tree(ner_tags)
+                    for ele in ner_tree:
+                        if type(ele) == nltk.Tree:
+                            if ele.label() == "PERSON":
+                                for x in ele.leaves():
+                                    persons.add(x[0].lower())
+                            elif ele.label() == "ORGANIZATION":
+                                for x in ele.leaves():
+                                    orgs.add(x[0].lower())
+                except Exception as e:
+                    pass
     pronouns = ["i", "you", "he", "she", "it"]
     for pron in pronouns:
         persons.add(pron)

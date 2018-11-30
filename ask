@@ -23,10 +23,10 @@ def ask(line, persons, orgs):
     raw_tree = tree_file.generateTree(line)
     ner_tree = tree_file.stanfordNE2tree(ner_tags)
     qs = []
-    append_if_not_None(qs, question.askBinary(line, raw_tree))
-    append_if_not_None(qs, question.askWhen(line, raw_tree, ner_tree))
+    append_if_not_None(qs, question.askBinary(line, raw_tree, persons, orgs))
+    append_if_not_None(qs, question.askWhen(line, raw_tree, ner_tree, persons, orgs))
     append_if_not_None(qs, question.askSubject(line, raw_tree, ner_tree, persons, orgs))
-    append_if_not_None(qs, question.askWhere(line, raw_tree, ner_tree))
+    append_if_not_None(qs, question.askWhere(line, raw_tree, ner_tree, persons, orgs))
     '''
     append_if_not_None(qs, question1.askDoWhat(tree))
     '''

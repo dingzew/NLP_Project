@@ -1,1 +1,20 @@
-I'm good.
+In contrast to its consonants, Klingon's inventory of vowels is simple, and similar to those of many human languages, such as Spanish (or Japanese, due to also having a simple phonology). There are five vowels spaced more or less evenly around the vowel space, with two back rounded vowels, one back unrounded vowel, and two front or near-front unrounded vowels. The vowel inventory is asymmetrical in that the back rounded vowels are tense and the front vowels are lax.
+The two front vowels, ⟨e⟩ and ⟨I⟩, represent sounds that are found in English, but are more open and lax than a typical English speaker might assume when reading Klingon text written in the Latin alphabet, thus causing the consonants of a word to be more prominent. This enhances the sense that Klingon is a clipped and harsh-sounding language.
+Vowels
+⟨a⟩ – /ɑ/ – open back unrounded vowel (in English spa)
+⟨e⟩ – /ɛ/ – open-mid front unrounded vowel (in English bed)
+⟨I⟩ – /ɪ/ – near-close near-front unrounded vowel (in English bit)
+⟨o⟩ – /o/ – close-mid back rounded vowel (in French eau)
+⟨u⟩ – /u/ – close back rounded vowel (in Spanish tu)
+Diphthongs can be analyzed phonetically as the combination of the five vowels plus one of the two semivowels /w/ and /j/ (represented by ⟨w⟩ and ⟨y⟩, respectively). Thus, the combinations ⟨ay⟩, ⟨ey⟩, ⟨Iy⟩, ⟨oy⟩, ⟨uy⟩, ⟨aw⟩, ⟨ew⟩ and ⟨Iw⟩ are possible. There are no words in the Klingon language that contain *⟨ow⟩ or *⟨uw⟩.
+
+
+Syllable structureEdit
+Klingon follows a strict syllable structure. A syllable must start with a consonant (which includes the glottal stop) followed by one vowel. In prefixes and other rare syllables, this is enough. More commonly, this consonant-vowel pair is followed by one consonant or one of three biconsonantal codas: /-w’ -y’ -rgh/. Thus, ta "record", tar "poison" and targh "targ" (a type of animal) are all legal syllable forms, but *tarD and *ar are not. Despite this, one suffix takes the shape vowel+consonant: the endearment suffix -oy.
+
+
+StressEdit
+In verbs, the stressed syllable is usually the verbal stem itself, as opposed to a prefix or any suffixes, except when a suffix ending with ⟨’⟩ is separated from the verb by at least one other suffix, in which case the suffix ending in ⟨’⟩ is also stressed. In addition, stress may shift to a suffix that is meant to be emphasized.
+In nouns, the final syllable of the stem (the noun itself, excluding any affixes) is stressed. If any syllables ending in ⟨’⟩ are present, the stress shifts to those syllables.
+The stress in other words seems to be variable, but this is not a serious issue because most of these words are only one syllable in length. There are some words which should fall under the rules above, but do not, although using the standard rules would still be acceptable.
+

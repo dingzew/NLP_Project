@@ -15,7 +15,11 @@ class Trie:
         self.children = {}
         self.is_end = False
 
+        self._trival_words = {"the", "there", "this", "that", "an", "a"}
+
     def add(self, word):
+        if word.lower() in self._trival_words:
+            return
         cur = self
         for ch in word:
             if ch not in cur.children:
@@ -97,11 +101,11 @@ def get_phrases(tree, pattern, reversed=False, sort=False):
     return phrases
 
 
-def merge_raw_tree(tree, lower=False):
+def merge_raw_tree(tree, persons=None, orgs=None, lower=False):
     alist = list(tree.leaves())
     if not alist:
         return ""
-    if lower and is_pron(alist[0]):
+    if lower and (is_pron(alist[0]) or alist[0] not in persons and alist[0] not in orgs):
         alist[0] = alist[0].lower()
     return " ".join(alist)
 
@@ -144,16 +148,6 @@ def testPlural(np):
             if word_pos[1].endswith('S'):
                 return True
     return False
-
-def main_sentence_structure(tree):
-    dic = {}
-    phrases = get_phrases(tree, "NP")
-    if not phrases: return dic
-    dic["main"] = merge_raw_tree(phrases[0])
-    phrases = get_phrases(tree, "VP")
-    if not phrases: return dic
-    dic["what"] = merge_raw_tree(phrases[0])
-    return dic
 
 def is_be(word):
     return word.lower() in {"be", "am", "is", "are", "was", "were"}
@@ -203,7 +197,7 @@ def find_subject_action(raw_tree):
     '''
     return (None, None)
 
-def get_qbody(raw_tree):
+def get_qbody(raw_tree, persons, orgs):
     np, vp = find_subject_action(raw_tree)
     if np is None or vp is None or np.leaves()[0] == "I":
         return None
@@ -215,13 +209,13 @@ def get_qbody(raw_tree):
     first_verb = get_first_verb(vp)
 
     if vp[0].label() == "MD":
-        qbody = vp[0][0] + " " + merge_raw_tree(np, lower=True) + " " + vp2base(vp).replace(vp[0][0], "").strip()
+        qbody = vp[0][0] + " " + merge_raw_tree(np, persons, orgs, lower=True) + " " + vp2base(vp).replace(vp[0][0], "").strip()
         return qbody
     elif is_be(first_verb):
-        qbody = first_verb + " " + merge_raw_tree(np, lower=True) + " " + vp2base(vp).replace(first_verb, "").strip()
+        qbody = first_verb + " " + merge_raw_tree(np, persons, orgs, lower=True) + " " + vp2base(vp).replace(first_verb, "").strip()
         return qbody
 
-    qbody = merge_raw_tree(np, lower=True) + " " + vp2base(vp)
+    qbody = merge_raw_tree(np, persons, orgs, lower=True) + " " + vp2base(vp)
 
     if tense == "past":
         if is_have(first_verb):
